@@ -1,5 +1,5 @@
 # Flight Information System Data
 
-Currently, airports and airline information is available. The data stems from [http://openflights.org/data.html](OpenFlights.org).
+Currently, airports and airline information is available. The data stems from [OpenFlights.org](http://openflights.org/data.html).
 
-![schema.png](Schema)
+![Schema](schema.png)
