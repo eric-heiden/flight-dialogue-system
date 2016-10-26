@@ -3,3 +3,11 @@
 Currently, airports and airline information is available. The data stems from [OpenFlights.org](http://openflights.org/data.html).
 
 ![Schema](schema.png)
+
+src
+dest
+date, +-range
+'return date', +-range
+class
+members
+
