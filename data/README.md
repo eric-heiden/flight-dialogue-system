@@ -4,10 +4,11 @@ Currently, airports and airline information is available. The data stems from [O
 
 ![Schema](schema.png)
 
-src
-dest
-date, +-range
-'return date', +-range
-class
-members
+Required details: 
+[src]
+[dest]
+[date, +-range]
+['return date', +-range]
+[class]
+[#members]
 
