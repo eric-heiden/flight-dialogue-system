@@ -5149,7 +5149,8 @@
 		"Altitude" : 542,
 		"Timezone" : -6,
 		"DST" : "A",
-		"TZ" : "America/Chicago"
+		"TZ" : "America/Chicago",
+		"Passengers": 11897959
 	},
 	{
 		"Id" : 6237,
@@ -25130,20 +25131,6 @@
 		"TZ" : "America/Denver"
 	},
 	{
-		"Id" : 6423,
-		"Name" : "Guettin MecklenburgVorpommern Germany",
-		"City" : "Ruegen",
-		"Country" : "Germany",
-		"IATA_FAA" : "GTI",
-		"ICAO" : "EDCG",
-		"Latitude" : 54,
-		"Longitude" : 13,
-		"Altitude" : 69,
-		"Timezone" : 1,
-		"DST" : "U",
-		"TZ" : "Europe/Berlin"
-	},
-	{
 		"Id" : 2020,
 		"Name" : "Mount Cook",
 		"City" : "Mount Cook",
@@ -37195,7 +37182,8 @@
 		"Altitude" : 126,
 		"Timezone" : -8,
 		"DST" : "A",
-		"TZ" : "America/Los_Angeles"
+		"TZ" : "America/Los_Angeles",
+		"Passengers": 36351226
 	},
 	{
 		"Id" : 824,
