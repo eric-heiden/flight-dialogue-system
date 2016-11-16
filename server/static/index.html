@@ -1,0 +1,31 @@
+<!DOCTYPE html>
+<html lang="en" ng-app="FIS">
+<head>
+    <meta charset="UTF-8">
+    <title>✈️ Flight Information System</title>
+    <link rel="stylesheet" href="static/style.css"/>
+    <script src="static/bower_components/socket.io-client/socket.io.js"></script>
+    <script src="static/bower_components/angular/angular.min.js"></script>
+    <script src="static/bower_components/moment/moment.js"></script>
+    <script src="static/app.js"></script>
+</head>
+<body ng-controller="ChatCtrl">
+
+<h1>Flight Information System ✈️️</h1>
+<ol class="chat">
+    <li ng-repeat="entry in chat" ng-class="entry.partner">
+        <div class="avatar"></div>
+        <div class="msg">
+            <p ng-repeat="line in entry.lines">{{line}}</p>
+            <p ng-if="entry.text">{{entry.text}}</p>
+            <time>{{entry.time}}</time>
+        </div>
+    </li>
+</ol>
+
+<form ng-submit="send()">
+    <input ng-model="input" class="textarea" type="text" placeholder="Type here" />
+</form>
+
+</body>
+</html>
