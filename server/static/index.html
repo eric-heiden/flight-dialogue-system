@@ -18,6 +18,14 @@
         <div class="msg">
             <p ng-repeat="line in entry.lines">{{line}}</p>
             <p ng-if="entry.text">{{entry.text}}</p>
+            <span ng-if="entry.partner == 'other'" class="feedback">
+                <a href="#" title="Good question">
+                    👍
+                </a>
+                <a href="#" title="Bad question">
+                    👎
+                </a>
+            </span>
             <time>{{entry.time}}</time>
         </div>
     </li>

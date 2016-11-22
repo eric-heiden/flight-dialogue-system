@@ -6,11 +6,17 @@ from flask.ext.socketio import SocketIO, emit
 import getpass
 from qpx import qpx
 import json
+from system import DialogueManager
+from nlg.nlg import Speaker
+
+speaker = Speaker(DialogueManager)
 
 app = Flask(__name__)
 socketio = SocketIO(app)
 
 user_name = getpass.getuser().capitalize()
+
+last_question = None
 
 
 @app.route('/static/<path:path>')
@@ -25,38 +31,48 @@ def hello():
 
 @socketio.on('message')
 def socket_message(message):
+    global last_question
     query = message["query"]
-    if " to " in query:
-        origin = query[:query.index(" to ")].upper()
-        destination = query[query.index(" to ")+len(" to "):].upper()
-        request = {
-            "request": {
-                "passengers": {
-                    "adultCount": 1
-                },
-                "slice": [
-                    {
-                        "date": "2016-12-09",
-                        "origin": origin,
-                        "destination": destination
-                    }
-                ]
-            }
-        }
-        print(json.dumps(request, indent=4))
-        flights = qpx.extract_flights(qpx.get_flights(request))
-        if flights is None or len(flights) == 0:
-            lines = ["Sorry, I couldn't find any flights from %s to %s." % (origin, destination)]
-        elif len(flights) <= 10:
-            lines = ["Here are the %i flights I could find:" % len(flights)] + list(map(qpx.stringify, flights))
-        else:
-            lines = ["I found %i flights in total but I will only show the first 10 flights:" % len(flights)] + list(map(qpx.stringify, flights[:10]))
-    else:
-        lines = ["Sorry, %s, I didn't understand your query." % user_name]
+    answer = [(query, 1)]
+    feedback = speaker.inform(DialogueManager.inform(last_question.name, answer))
+    last_question = DialogueManager.next_question()[0]
+
     emit('message', {
-        'type': 'answer',
-        'lines': lines
-    })
+             'type': 'answer',
+             'lines': [feedback, speaker.ask(last_question)]
+         })
+
+    # if " to " in query:
+    #     origin = query[:query.index(" to ")].upper()
+    #     destination = query[query.index(" to ")+len(" to "):].upper()
+    #     request = {
+    #         "request": {
+    #             "passengers": {
+    #                 "adultCount": 1
+    #             },
+    #             "slice": [
+    #                 {
+    #                     "date": "2016-12-09",
+    #                     "origin": origin,
+    #                     "destination": destination
+    #                 }
+    #             ]
+    #         }
+    #     }
+    #     print(json.dumps(request, indent=4))
+    #     flights = qpx.extract_flights(qpx.get_flights(request))
+    #     if flights is None or len(flights) == 0:
+    #         lines = ["Sorry, I couldn't find any flights from %s to %s." % (origin, destination)]
+    #     elif len(flights) <= 10:
+    #         lines = ["Here are the %i flights I could find:" % len(flights)] + list(map(qpx.stringify, flights))
+    #     else:
+    #         lines = ["I found %i flights in total but I will only show the first 10 flights:" % len(flights)] + list(map(qpx.stringify, flights[:10]))
+    # else:
+    #     lines = ["Sorry, %s, I didn't understand your query." % user_name]
+    # emit('message', {
+    #     'type': 'answer',
+    #     'lines': lines
+    # })
 
 
 @socketio.on('my broadcast event')
@@ -66,11 +82,14 @@ def socket_message(message):
 
 @socketio.on('connect')
 def socket_connect():
+    global last_question
+    last_question = DialogueManager.next_question()[0]
     emit('message', {
         'type': 'greeting',
         'lines': [
             ("Hello %s!" % user_name),
-            "I'm your personal assistant to help you find the best flight 😊"
+            "I'm your personal assistant to help you find the best flight 😊",
+            speaker.ask(last_question)
         ]
     })
     print("New user connected")

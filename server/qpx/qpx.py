@@ -1,7 +1,6 @@
 import sys, requests, uuid, json, os
 from colorama import Fore
 
-
 FOLDER_PREFIX = "qpx/"
 
 
@@ -40,6 +39,14 @@ def get_flights(request):
     return None
 
 
+def get_origin(slice, p="origin"):
+    return slice["segments"][0]["legs"][0][p]
+
+
+def get_destination(slice, p="destination"):
+    return slice["segments"][-1]["legs"][-1][p]
+
+
 def extract_flights(response):
     if response is None:
         return None
@@ -54,6 +61,10 @@ def extract_flights(response):
         flight["price"] = tripOption["saleTotal"]
         flight["slices"] = []
         flight["totalDuration"] = 0  # in minutes
+        flight["legs"] = 0
+        flight["carriers"] = set()
+        flight["aircraftTypes"] = set()
+        flight["cabins"] = set()
         for slice in tripOption["slice"]:
             s = {}
             s["duration"] = slice["duration"]
@@ -63,6 +74,8 @@ def extract_flights(response):
                 seg = {}
                 for p in ["cabin", "duration", "bookingCode", "bookingCodeCount", "flight"]:
                     seg[p] = segment[p]
+                flight["carriers"].add(segment["flight"]["carrier"])
+                flight["cabins"].add(segment["cabin"])
                 seg["connectionDuration"] = segment["connectionDuration"] if "connectionDuration" in segment else 0
                 seg["legs"] = []
                 for li, leg in enumerate(segment["leg"]):
@@ -70,9 +83,35 @@ def extract_flights(response):
                     del l["kind"]
                     del l["id"]
                     seg["legs"].append(l)
+                    flight["legs"] += 1
+                    flight["aircraftTypes"].add(leg["aircraft"])
                 s["segments"].append(seg)
 
             flight["slices"].append(s)
+
+        flight["cabins"] = list(flight["cabins"])
+        flight["carriers"] = list(flight["carriers"])
+        flight["aircraftTypes"] = list(flight["aircraftTypes"])
+        flight["nonstop"] = flight["legs"] == 1
+        flight["passengers"] = tripOption["pricing"][0]["passengers"]
+        del flight["passengers"]["kind"]
+
+        flight["origin"] = get_origin(flight["slices"][0])
+        flight["type"] = "single" if len(flight["slices"]) == 1 else "multi"
+        if len(flight["slices"]) == 2:
+            flight["destination"] = get_destination(flight["slices"][1])
+            if flight["origin"] == flight["destination"]:
+                flight["type"] = "return"
+                flight["destination"] = get_destination(flight["slices"][0])
+        else:
+            flight["destination"] = get_destination(flight["slices"][-1])
+
+        departure = flight["slices"][0]["segments"][0]["legs"][0]["departureTime"]
+        flight["departureDate"] = departure[:departure.index("T")]
+        flight["departureTime"] = departure[departure.index("T") + 1:]
+        arrival = flight["slices"][-1]["segments"][-1]["legs"][-1]["arrivalTime"]
+        flight["arrivalDate"] = arrival[:arrival.index("T")]
+        flight["arrivalTime"] = arrival[arrival.index("T") + 1:]
 
         flights.append(flight)
 
@@ -80,12 +119,6 @@ def extract_flights(response):
 
 
 def stringify(flight):
-    def get_origin(slice, p="origin"):
-        return slice["segments"][0]["legs"][0][p]
-
-    def get_destination(slice, p="destination"):
-        return slice["segments"][-1]["legs"][-1][p]
-
     def intermediate_stops(flight, origin, destination):
         im = set()
         for slice in flight["slices"]:
@@ -139,6 +172,7 @@ def stringify(flight):
     return output
 
 
+# just for testing...
 def main(argv):
     request = {
         "request": {
