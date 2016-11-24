@@ -4,6 +4,7 @@
 * Java
 * spaCy Python library (https://pypi.python.org/pypi/spacy/1.2.0)
 * Python SUTime (https://github.com/FraBle/python-sutime)
+* NLTK
 
 # Usage
 
@@ -46,3 +47,21 @@ Does not handle date ranges.
 * **cabin_class (str)**
 * **qualifiers (set of str)** (e.g. cheapest, earliest)
 * **numbers (list of int)**
+
+# Classifer Notes
+
+## Weka Settings
+
+* FilteredClassifier
+    * classifier: J48
+    * filter: StringToWordVector
+        * IDFTransform: True
+        * TFTransform: True
+        * lowerCaseTokens: True
+        * outputWordCounts: True
+        * stemmer: IteratedLovinsStemmer
+        * stopwordsHandler: WordsFromFile (file includes um, uh)
+        * tokenizer: NGramTokenizer
+        * wordsToKeep: 100
+
+Values not listed were defaults.

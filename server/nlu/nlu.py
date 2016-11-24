@@ -322,7 +322,7 @@ def detect_qualifiers(doc):
 
 def extract_info(utterance):
 	doc = nlp(utterance)
-	data = {'dialog_act': act_classifier.simple_classify(utterance)} # TODO: replace with better classifier
+	data = {'dialog_act': act_classifier.classify(doc)}
 	data.update(detect_entities(doc))
 	data.update(detect_iata(doc))
 	data.update(detect_cabin_class(doc))
@@ -330,7 +330,6 @@ def extract_info(utterance):
 	indices, datetimes = detect_datetimes(doc)
 	data.update(datetimes)
 	data.update(detect_numbers(utterance, indices))
-	# TODO: need to extract attributes of airlines for reviews (e.g. seat vs. food)? or just airline name?
 	return data
 
 
