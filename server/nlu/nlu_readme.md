@@ -37,7 +37,7 @@
 morning = 00:00 - 12:00
 afternoon = 12:00 - 18:00
 evening/night = 18:00 - 23:59
-<specific time> +/= 1 hour of the given time
+specific time = +/= 1 hour of the given time
 
 Does not handle date ranges.
 
@@ -45,7 +45,7 @@ Does not handle date ranges.
 * **dialog_act (str)** statement, question, yes, no, other
 * **airlines (list of str)**
 * **cabin_class (str)**
-* **qualifiers (set of str)** (e.g. cheapest, earliest)
+* **qualifiers (set of str)** direct, earlier, earliest, later, latest, cheapest
 * **numbers (list of int)**
 
 # Classifer Notes
@@ -62,6 +62,6 @@ Does not handle date ranges.
         * stemmer: IteratedLovinsStemmer
         * stopwordsHandler: WordsFromFile (file includes um, uh)
         * tokenizer: NGramTokenizer
-        * wordsToKeep: 100
+        * wordsToKeep: 50
 
 Values not listed were defaults.

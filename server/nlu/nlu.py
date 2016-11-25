@@ -40,11 +40,11 @@ TIME_OF_DAY_INDICATORS = {'MO', 'AF', 'EV', 'NI'}
 
 
 RELATED_WORDS = {
-	'destination': {'arrive', 'return', 'come', 'to', 'for', 'at', 'go'},
-	'origin': {'depart', 'leave', 'from'},
+	'destination': {'arrive', 'to', 'for', 'at', 'go', 'fly', 'travel'},
+	'origin': {'depart', 'leave', 'from', 'come', 'back', 'return'},
+	'invert_to_from': {'return', 'come'},
 	'inbound': {'return', 'come', 'back', 'from'},
-	'outbound': {'leave', 'depart', 'to', 'go'},
-	'passenger': {'passenger', 'person', 'people', 'adult', 'child'}
+	'outbound': {'leave', 'depart', 'to', 'go', 'fly', 'travel'},
 }
 
 
@@ -81,6 +81,24 @@ def seems_like_airport(name):
 		return True
 	else:
 		return False
+		
+def determine_entity_o_d(token):
+	o_d = None
+	for ancestor in token.ancestors:
+		if ancestor.tag_[0] == 'V':
+			if o_d is not None and ancestor.lemma_ in RELATED_WORDS['invert_to_from']:
+				o_d = 'origin' if o_d == 'destination' else 'destination'
+			elif ancestor.lemma_ == 'depart':
+				o_d = 'origin'
+			elif ancestor.lemma_ == 'arrive':
+				o_d = 'destination'
+			return o_d
+		else:
+			if ancestor.lemma_ == 'to':
+				o_d = 'destination'
+			elif ancestor.lemma_ == 'from':
+				o_d = 'origin'
+	return o_d
 
 
 def detect_entities(doc):
@@ -92,10 +110,11 @@ def detect_entities(doc):
 	'''
 	keywords = {}
 	for ent in doc.ents:
+		o_d = determine_entity_o_d(ent.root)
 		if ent.label_ == 'GPE' or seems_like_airport(ent.orth_):
-			if indicates(ent.root.head, 'origin'):
+			if o_d == 'origin':
 				keywords.update({'o_location': ent.orth_})
-			elif indicates(ent.root.head, 'destination'):
+			elif o_d == 'destination':
 				keywords.update({'d_location': ent.orth_})
 			else:
 				if 'u_location' not in keywords:
@@ -106,9 +125,9 @@ def detect_entities(doc):
 				keywords['airlines'] = []
 			keywords['airlines'].append(ent.orth_.upper())
 		elif ent.label_ != 'DATE' and not is_iata(ent.orth_) and not is_numeral(ent.orth_):
-			if indicates(ent.root.head, 'origin'):
+			if o_d == 'origin':
 				keywords.update({'o_entity': ent.orth_.strip(PUNCTUATION)})
-			elif indicates(ent.root.head, 'destination'):
+			elif o_d == 'origin':
 				keywords.update({'d_entity': ent.orth_.strip(PUNCTUATION)})
 			else:
 				if 'u_entity' not in keywords:
@@ -152,13 +171,13 @@ def find_in_doc(doc, word):
 def determine_outbound_inbound(doc, text):
 	word = text.split()[0]
 	token = find_in_doc(doc, word)
-	for ancestor in token.ancestors: # search for verbs
+	for ancestor in token.ancestors: # search for ancestor verbs
 		if indicates(ancestor, 'inbound'):
 			return 'inbound'
 		elif indicates(ancestor, 'outbound'):
 			return 'outbound'
 	found_word = False
-	for i in range(1, len(doc)): # search for prepositions
+	for i in range(1, len(doc)): # search for nearby prepositions
 		if token == doc[-i]:
 			found_word = True
 		if found_word and indicates(doc[-i], 'inbound'):
@@ -282,6 +301,10 @@ def detect_cabin_class(doc):
 	for cabin_class in CABIN_CLASS_WORDS:
 		if cabin_class in doc.text.lower():
 			keywords.update({'cabin_class': CABIN_CLASS_WORDS[cabin_class]})
+		if 'cabin_class' in keywords and \
+			keywords['cabin_class'] == 'FIRST' and \
+			'the first' in doc.text.lower():
+			del keywords['cabin_class']
 	return keywords
 
 
@@ -291,20 +314,41 @@ def detect_cabin_class(doc):
 
 
 COMPARATIVE_AND_SUPERLATIVE_POS = {'JJR', 'JJS', 'RBR', 'RBS'}
-
+OTHER_FEATURES = {'direct', 'non-stop', 'nonstop', 'the first', 'least expensive', 'least costly'}
+STANDARDIZED_FEATURES = {
+	'direct': {'direct', 'non-stop', 'nonstop'},
+	'earlier': {'earlier', 'before'},
+	'later': {'later', 'after'},
+	'earliest': {'the first', 'earliest'},
+	'latest': {'last', 'latest'},
+	'cheapest': {'cheapest', 'inexpensive', 'least expensive', 'least costly'},
+}
 
 def detect_comparatives_and_superlatives(doc):
 	return {token.orth_.lower() for token in doc
 			if token.tag_ in COMPARATIVE_AND_SUPERLATIVE_POS}
 
 
+def detect_flight_features(doc):
+	features = set()
+	for feature in OTHER_FEATURES:
+		if feature in doc.text:
+			features.add(feature)
+	return features
+
+
 def standardize_qualifiers(qualifiers):
-	# TODO
-	return qualifiers
+	standardized_qualifiers = set()
+	for feature in STANDARDIZED_FEATURES:
+		for synonym in STANDARDIZED_FEATURES[feature]:
+			if synonym in qualifiers:
+				standardized_qualifiers.add(feature)
+	return standardized_qualifiers
 
 
 def detect_qualifiers(doc):
 	qualifiers = detect_comparatives_and_superlatives(doc)
+	qualifiers |= detect_flight_features(doc)
 	qualifiers = standardize_qualifiers(qualifiers)
 	if qualifiers:
 		return {'qualifiers': qualifiers}
