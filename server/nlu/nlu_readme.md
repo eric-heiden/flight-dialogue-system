@@ -47,6 +47,7 @@ Does not handle date ranges.
 * **cabin_class (str)**
 * **qualifiers (set of str)** direct, earlier, earliest, later, latest, cheapest
 * **numbers (list of int)**
+* **flight codes (list of str)**
 
 # Classifer Notes
 

@@ -272,7 +272,7 @@ def detect_datetimes(doc):
 
 
 def detect_numbers(utterance, exclude):
-	candidate_numbers = {int(num) for num in re.findall('([\d,]+)', utterance)}
+	candidate_numbers = {int(num) for num in re.findall('(?<!\S)(\d+)(?!\S)', utterance)}
 	non_excluded_numbers = set(candidate_numbers)
 	for number in candidate_numbers:
 		for start, end in exclude:
@@ -282,6 +282,18 @@ def detect_numbers(utterance, exclude):
 		return {'numbers': list(non_excluded_numbers)}
 	else:
 		return {}
+
+
+################
+# FLIGHT CODES #
+################
+
+
+def detect_flight_codes(utterance):
+	flight_codes = re.findall('([A-Za-z]{2,3}\d{1,4}[A-Za-z]?)', utterance)
+	if len(flight_codes) > 0:
+		return {'flight_codes': flight_codes}
+	return {}
 
 
 #########
@@ -404,6 +416,7 @@ def extract_info(utterance):
 	assume_origin_destination(data)
 	assume_inbound_outbound(data)
 	data.update(detect_numbers(utterance, indices))
+	data.update(detect_flight_codes(utterance))
 	return data
 
 
