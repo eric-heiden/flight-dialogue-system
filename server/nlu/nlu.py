@@ -356,6 +356,36 @@ def detect_qualifiers(doc):
 		return {}
 
 
+def assume_origin_destination(data):
+	if 'u_location' in data:
+		if data and 'o_location' in data and 'd_location' not in data:
+			data['d_location'] = data['u_location'][0]
+			data['u_location'].remove(data['d_location'])
+		elif 'o_location' not in data and 'd_location' in data:
+			data['o_location'] = data['u_location'][0]
+			data['u_location'].remove(data['o_location'])
+
+def assume_inbound_outbound(data):
+	if 'u_date' in data:
+		if 'out_date' in data and 'in_date' not in data:
+			data['in_date'] = data['u_date']
+			del data['u_date']
+		elif 'out_date' not in data and 'in_date' in data:
+			data['out_date'] = data['u_date']
+			del data['u_date']
+	if 'u_time_earliest' in data:
+		if 'out_time_earliest' in data and 'in_time_earliest' not in data:
+			data['in_time_earliest'] = data['u_time_earliest']
+			data['in_time_latest'] = data['u_time_latest']
+			del data['u_time_earliest']
+			del data['u_time_latest']
+		elif 'out_time_earliest' not in data and 'in_time_earliest' in data:
+			data['out_time_earliest'] = data['u_time_earliest']
+			data['out_time_latest'] = data['u_time_latest']
+			del data['u_time_earliest']
+			del data['u_time_latest']
+
+
 ######################
 # "PUBLIC" FUNCTIONS #
 ######################
@@ -373,6 +403,8 @@ def extract_info(utterance):
 	data.update(detect_qualifiers(doc))
 	indices, datetimes = detect_datetimes(doc)
 	data.update(datetimes)
+	assume_origin_destination(data)
+	assume_inbound_outbound(data)
 	data.update(detect_numbers(utterance, indices))
 	return data
 
