@@ -390,9 +390,7 @@ def assume_inbound_outbound(data):
 # "PUBLIC" FUNCTIONS #
 ######################
 
-
 # TODO: make origin vs. destination distinguisher more robust? (e.g. "returning to X" assumes X is destination)
-
 
 def extract_info(utterance):
 	doc = nlp(utterance)

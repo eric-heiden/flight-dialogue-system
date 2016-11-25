@@ -70,7 +70,8 @@ def check_if_has_negative(text):
 
 def format(post):
 	doc = nlp(post.text)
-	doc_text = re.sub('[^\w \.,\'\?!]', '', post.text)
+	doc_text = re.sub('[\d\-]+.*User.*\d+', 'USERNAME', post.text)
+	doc_text = re.sub('[^\w \.,\'\?!]', '', doc_text)
 	has_question_mark = 'true' if '?' in doc_text else 'false'
 	has_affirmative = check_if_has_affirmative(post.text)
 	has_negative = check_if_has_negative(post.text)
