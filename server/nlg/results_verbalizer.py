@@ -14,10 +14,6 @@ import datetime
 # SG = singular
 # PL = plural
 
-SUM_SEQUENCE = [
-	'SUM_NUM_ITINERARIES',
-	'SUM_NUM_NONSTOP_ITINERARIES',
-	]
 
 NO_FLIGHTS = [
 	"There doesn't seem to be any flights that match the criteria.",
@@ -25,12 +21,14 @@ NO_FLIGHTS = [
 	"I can't seem to find a flight that has what you're looking for.",
 	]
 
+
 # SUM_NUM_OF_ITINERARIES
 # <A> number of itineraries
 SUM_NUM_ITINERARIES_PL = [
 	"There are <A> itineraries matching your criteria.",
 	"I've found <A> possible trips that meet your specifications.",
 	]
+
 
 # <A> number of non-stop itineraries
 SUM_NUM_NONSTOP_ITINERARIES_SG = [
