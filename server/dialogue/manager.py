@@ -1,5 +1,5 @@
 from collections import namedtuple
-from typing import Union
+from typing import Union, Generator, Tuple
 
 import sys
 
@@ -21,10 +21,11 @@ class Manager:
             self.available_fields[field.name] = field
 
         self.minimal_fields = minimal_fields
-        self.user_state = {} # {str: [(Union[str,int,float], float)]}
+        self.user_state = {}  # {str: [(Union[str,int,float], float)]}
         self.database = database
 
-        self.possible_data = [] # [object]
+        self.possible_data = []  # [object]
+        self.asked_questions = set()  # set of field names
 
         self.interaction_sequence = []
 
@@ -36,7 +37,7 @@ class Manager:
         return True
 
     # returns attribute name + expected values
-    def next_question(self) -> (Field, [Union[str,int,float]]):
+    def next_question(self) -> (Field, {str: int}):
         # first complete the minimal fields (if they haven't been filled)
         for name in self.minimal_fields:
             if name not in self.user_state:
@@ -50,6 +51,8 @@ class Manager:
         best_field = None
         best_entropy = sys.maxsize
         for field in fields[1:]:
+            if field.name in self.asked_questions:
+                continue
             entropy = field.entropy(self.possible_data)
             if 1e-10 < entropy < best_entropy:
                 best_entropy = entropy
@@ -58,27 +61,32 @@ class Manager:
         if best_field is None:
             return None, None
 
+        self.asked_questions.add(best_field.name)
         self.interaction_sequence.append(
             DialogueTurn("question", best_field.name)
         )
-        return best_field, list(best_field.category_count(self.possible_data).keys())
+        return best_field, best_field.category_count(self.possible_data)
 
     # provides information via attribute name + values with confidence scores
     # returns False, error message if something went wrong
     # otherwise True, number of possible flights
-    def inform(self, attribute: str, values: [(str, float)]) -> (bool, Union[str,int]):
+    def inform(self, attribute: Union[str, Field], values: [(str, float)]) -> Generator[str, None, Tuple[bool, Union[str, int]]]:
         self.interaction_sequence.append(
             DialogueTurn("answer", (attribute, values))
         )
         if len(values) == 0:
             return False, 'no attribute values provided'
         if len(values) > 1:
-            pruned = self.available_fields[attribute].prune(values)
+            pruned = self.available_fields[attribute.name].prune(values)
             print('Pruned %i values to %i.' % (len(values), len(pruned)))
             values = pruned
+        if not isinstance(attribute, str):
+            attribute = attribute.name
         self.user_state[attribute] = values
 
-        return True, self.update()
+        yield "Updating data..."
+        updated = yield from self.update()
+        return True, updated
 
     # provides feedback to a question which updates the attribute's score
     def feedback(self, attribute: str, positive: bool):
@@ -88,9 +96,28 @@ class Manager:
         self.available_fields[attribute].score *= 1.1 if positive else 0.9
         pass
 
+    def filter_possible(self, raw_data: [object]) -> [object]:
+        filtered = []
+        for data_entry in raw_data:
+            state_agrees = True
+            for key, values in self.user_state.items():
+                categories, _ = self.available_fields[key].filter(data_entry)
+                found_matching_value = False
+                for value, _ in values:
+                    for cat in categories:
+                        if str(value).lower() == str(cat).lower():
+                            found_matching_value = True
+                            break
+                if not found_matching_value:
+                    state_agrees = False
+                    break
+            if state_agrees:
+                filtered.append(data_entry)
+        return filtered
+
     # updates and returns number of possible flights
     # returns None if the minimal set of attributes has not been filled so far
-    def update(self) -> int:
+    def update(self) -> Generator[str, None, Union[None, int]]:
         if not self.sufficient():
             return None
 
@@ -103,16 +130,38 @@ class Manager:
             query = {}
             for attribute, index in open_queries:
                 query[attribute] = self.user_state[attribute][index][0]
-            self.possible_data += self.database.query(query)
+            results = self.database.query(query)
+            if results is not None:
+                self.possible_data += self.filter_possible(results)
+
             if len(self.possible_data) > MAX_DATA:
                 break
             updated = False
             for i, (attribute, index) in enumerate(open_queries):
                 if not updated and index > 0:
+                    yield "Querying database with %s = %s..." % (attribute, self.user_state[attribute][index-1][0])
                     open_queries[i] = attribute, index-1
                     updated = True
                     break
             if not updated:
                 break
 
+        yield "Updating user state with new flights data..."
+        self.update_user_state()
+
         return len(self.possible_data)
+
+    # remove values from user state that do not appear in the available flights data
+    def update_user_state(self):
+        for key, values in self.user_state.items():
+            existing_values = set()
+            for data_entry in self.possible_data:
+                categories, _ = self.available_fields[key].filter(data_entry)
+                for cat in categories:
+                    existing_values.add(cat)
+            nvalues = []
+            for existing in existing_values:
+                for value, score in values:
+                    if str(existing).lower() == str(value).lower():
+                        nvalues.append((value, score))
+            self.user_state[key] = nvalues

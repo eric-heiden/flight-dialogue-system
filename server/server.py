@@ -1,22 +1,15 @@
 #!/usr/bin/env python
 # -*- coding: utf-8 -*-
-from flask import render_template, Flask
-from flask import send_from_directory
-from flask.ext.socketio import SocketIO, emit
-import getpass
-from qpx import qpx
-import json
-from system import DialogueManager
-from nlg.nlg import Speaker
+import uuid
 
-speaker = Speaker(DialogueManager)
+import eventlet
+from flask import Flask, send_from_directory, session
+from flask_socketio import SocketIO, emit
+from system import Pipeline
 
 app = Flask(__name__)
+app.secret_key = uuid.uuid4()
 socketio = SocketIO(app)
-
-user_name = getpass.getuser().capitalize()
-
-last_question = None
 
 
 @app.route('/static/<path:path>')
@@ -31,48 +24,20 @@ def hello():
 
 @socketio.on('message')
 def socket_message(message):
-    global last_question
     query = message["query"]
-    answer = [(query, 1)]
-    feedback = speaker.inform(DialogueManager.inform(last_question.name, answer))
-    last_question = DialogueManager.next_question()[0]
-
-    emit('message', {
-             'type': 'answer',
-             'lines': [feedback, speaker.ask(last_question)]
-         })
-
-    # if " to " in query:
-    #     origin = query[:query.index(" to ")].upper()
-    #     destination = query[query.index(" to ")+len(" to "):].upper()
-    #     request = {
-    #         "request": {
-    #             "passengers": {
-    #                 "adultCount": 1
-    #             },
-    #             "slice": [
-    #                 {
-    #                     "date": "2016-12-09",
-    #                     "origin": origin,
-    #                     "destination": destination
-    #                 }
-    #             ]
-    #         }
-    #     }
-    #     print(json.dumps(request, indent=4))
-    #     flights = qpx.extract_flights(qpx.get_flights(request))
-    #     if flights is None or len(flights) == 0:
-    #         lines = ["Sorry, I couldn't find any flights from %s to %s." % (origin, destination)]
-    #     elif len(flights) <= 10:
-    #         lines = ["Here are the %i flights I could find:" % len(flights)] + list(map(qpx.stringify, flights))
-    #     else:
-    #         lines = ["I found %i flights in total but I will only show the first 10 flights:" % len(flights)] + list(map(qpx.stringify, flights[:10]))
-    # else:
-    #     lines = ["Sorry, %s, I didn't understand your query." % user_name]
-    # emit('message', {
-    #     'type': 'answer',
-    #     'lines': lines
-    # })
+    for output in session["system"].input(query):
+        if isinstance(output, str):
+            emit('message', {
+                'type': 'progress',
+                'lines': [output]
+            })
+        else:
+            emit('message', {
+                'type': output.output_type.name,
+                'lines': output.lines
+            })
+        eventlet.sleep(0)
+    emit('state', session["system"].user_state())
 
 
 @socketio.on('my broadcast event')
@@ -82,19 +47,19 @@ def socket_message(message):
 
 @socketio.on('connect')
 def socket_connect():
-    global last_question
-    last_question = DialogueManager.next_question()[0]
-    emit('message', {
-        'type': 'greeting',
-        'lines': [
-            ("Hello %s!" % user_name),
-            "I'm your personal assistant to help you find the best flight 😊",
-            speaker.ask(last_question)
-        ]
-    })
+    session["system"] = Pipeline()
+    for output in session["system"].output():
+        emit('message', {
+            'type': output.output_type.name,
+            'lines': output.lines
+        })
+    emit('state', session["system"].user_state())
     print("New user connected")
 
 
 @socketio.on('disconnect')
 def socket_disconnect():
-    print('Client disconnected')
+    print('User disconnected')
+
+if __name__ == '__main__':
+    socketio.run(app)

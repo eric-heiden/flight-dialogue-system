@@ -1,4 +1,5 @@
 from collections import namedtuple, defaultdict
+import numpy as np
 
 from math import log
 
@@ -18,12 +19,12 @@ class Field:
     def __init__(self,
                  name: str,
                  selector,
-                 categorize=lambda x: x,
+                 categorizer=lambda x: x,
                  score: float = 1,
                  default_value: object = None):
         self.name = name
         self.data = []
-        self.categorize = categorize
+        self.categorizer = categorizer
         if isinstance(selector, list):
             self.selector = select(selector)
         else:
@@ -31,12 +32,32 @@ class Field:
         self.score = score
         self.default_value = default_value
 
-    # Returns the category name and attribute value if the data_entry matches
+    def __repr__(self):
+        return self.name
+
+    def __str__(self):
+        return self.name
+
+    # returns applicable categories for the data entry
+    def categorize(self, data_entry: object) -> [str]:
+        if data_entry is None:
+            return []
+        cat = self.categorizer(data_entry)
+        if cat is None:
+            return []
+        if isinstance(cat, list):
+            return cat
+        elif isinstance(cat, dict):
+            return ["%s=%s" % (str(key), str(value)) for key, value in cat.items()]
+        else:
+            return [str(cat)]
+
+    # Returns the category names and attribute value if the data_entry matches
     # a Field category. Returns (None, None) otherwise.
-    def filter(self, data_entry: object) -> (str, object):
+    def filter(self, data_entry: object) -> ([str], object):
         selected = self.selector(data_entry)
-        category = self.categorize(selected)
-        return category, selected
+        categories = self.categorize(selected)
+        return categories, selected
 
     # updates self.data with only the field's column and filter raw_data
     # by returning a bool array
@@ -57,16 +78,9 @@ class Field:
     def category_count(self, raw_data: [object]) -> {str: int}:
         attributes = defaultdict(int)
         for entry in raw_data:
-            cat, _ = self.filter(entry)
-            if cat is not None:
-                if isinstance(cat, list):
-                    for sub_cat in cat:
-                        attributes[str(sub_cat)] += 1
-                elif isinstance(cat, dict):
-                    for key, value in cat.items():
-                        attributes["%s=%s" % (str(key), str(value))] += 1
-                else:
-                    attributes[cat] += 1
+            cats, _ = self.filter(entry)
+            for cat in cats:
+                attributes[cat] += 1
         return attributes
 
     def entropy(self, raw_data: [object]) -> float:
@@ -79,6 +93,7 @@ class Field:
         return e * self.score
 
     def gini(self, raw_data: [object]) -> float:
+        # TODO implement(?)
         return 0
 
     def print_stats(self, raw_data: [object]):
@@ -92,7 +107,6 @@ class Field:
     def prune(self, values: [(str, float)]) -> [(str, float)]:
         # perform MeanShift clustering
         from sklearn.cluster import MeanShift, estimate_bandwidth
-        import numpy as np
 
         scores = [score for _, score in values]
         X = np.array(list(zip(scores, np.zeros(len(scores)))), dtype=np.float)

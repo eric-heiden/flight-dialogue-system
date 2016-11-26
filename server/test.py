@@ -50,16 +50,18 @@ import json, sys, re
 # passengers = Field("Passengers", ["passengers"])
 # passengers.print_stats(flights)
 
-from system import DialogueManager
+from system import Pipeline
 from nlg.nlg import Speaker
+from nlu.nlu import extract_info
 
-speaker = Speaker(DialogueManager)
-print(speaker.ask(DialogueManager.next_question()[0]))
-print(speaker.inform(DialogueManager.inform("Destination", [("AMS", 1)])))
-print(speaker.ask(DialogueManager.next_question()[0]))
-print(speaker.inform(DialogueManager.inform("Origin", [("LAX", 1)])))
-print(speaker.ask(DialogueManager.next_question()[0]))
-print(speaker.inform(DialogueManager.inform("DepartureDate", [])))
-print(speaker.ask(DialogueManager.next_question()[0]))
-print(speaker.inform(DialogueManager.inform("DepartureDate", [("2016-12-09", 1)])))
-print(speaker.ask(DialogueManager.next_question()[0]))
+pipeline = Pipeline()
+
+print(list(pipeline.manager.inform("Destination", [("AMS", 1)])))
+print(list(pipeline.manager.inform("Origin", [("LAX", 1)])))
+print(list(pipeline.manager.inform("DepartureDate", [("2016-12-09", 1)])))
+
+q, expected = pipeline.manager.next_question()
+print((q, expected))
+
+extracted = extract_info("I want to fly from Los Angeles to London on next Tuesday")
+print(extracted)

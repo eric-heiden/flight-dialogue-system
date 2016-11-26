@@ -5,6 +5,7 @@ from dialogue.field import Field
 import random
 
 from dialogue.manager import Manager
+from nlg.results_verbalizer import verbalize
 
 generic_what_questions = [
     "Can you please tell me your desired %s?",
@@ -31,45 +32,55 @@ class Speaker:
         choices = list(map(lambda g: g % what, generic_what_questions)) + additions
         return random.choice(choices)
 
-    def ask(self, field: Field) -> str:
+    def say_list(self, l: [str]) -> str:
+        if len(l) == 0:
+            return ''
+        if len(l) == 1:
+            return l[0]
+        if len(l) == 2:
+            return '{l[0]} and {l[1]}'.format(l=l)
+        return ', '.join(l[:-2]) + ', ' + self.say_list(l[-2:])
+
+    def ask(self, field: Field, expected: {str: int}) -> str:
         if field is None:
             return random.choice(error) + " I couldn't come up with another question."
 
         self.asked[field.name] += 1
         self.last_question = field
+
+        hint = ""
+        if expected is not None and len(expected) > 0:
+            hint = " I found " + self.say_list(list(map(lambda x: '%i flights with %s = %s' % (x[1], field.name, x[0]), expected.items())))
+
         if field.name == "Origin":
             return self.generic("place of departure", [
                 "Where do you want to fly from?",
                 "From where do you want to fly?"
-            ])
+            ]) + hint
         if field.name == "Destination":
             return self.generic("destination", [
                 "Where do you want to fly to?"
-            ])
+            ]) + hint
         if field.name == "DepartureDate":
             return self.generic("date of departure", [
                 "When do you want to fly?"
-            ])
+            ]) + hint
         if field.name == "NonStop":
             return random.choice([
                 "Do you want to fly non-stop?",
                 "Do you want to avoid any intermediate stops?"
-            ])
-        return self.generic(field.name.lower())
+            ]) + hint
+        return self.generic(field.name.lower()) + hint
 
     # give feedback for Manager.inform()
-    def inform(self, feedback: (bool, Union[str,int])) -> str:
+    def inform(self, feedback: (bool, Union[str,int])) -> [str]:
         success, data = feedback
         if success:
             if data is None or data <= 0:
-                return random.choice(thanks).capitalize() + "! " + random.choice([
+                return [random.choice(thanks).capitalize() + "! " + random.choice([
                     "Now, before I can show you some flights I need more information.",
                     "Let me gather some more information until I can show you some flights."
-                ])
-            return random.choice(thanks).capitalize() + "! " + random.choice([
-                "I found %i flights so far matching your query.",
-                "Now we have %i flights.",
-                "My database gives us %i flights. Sounds great, doesn't it? 😎 Let's proceed..."
-            ]) % data
+                ])]
+            return verbalize(self.manager.possible_data, 4)
         else:
-            return random.choice(error) + " I got a problem from my manager. He said \"%s\"." % data
+            return [random.choice(error) + " I got a problem from my manager. He said \"%s\"." % data]

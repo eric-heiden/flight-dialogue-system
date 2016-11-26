@@ -4,7 +4,11 @@
 html, body {
     background: #e5e5e5;
     font-family: 'Lato', sans-serif;
-    margin: 0px auto;
+    min-height: 100%;
+    margin: 0;
+    padding: 0;
+    background: linear-gradient(rgba(82,179,217,0.9), rgba(82,179,217,0.5));
+    background-attachment: fixed;
 }
 ::selection{
   background: rgba(82,179,217,0.3);
@@ -19,6 +23,43 @@ a:link,a:hover,a:visited {
 
 h1 {
     margin: 10px 30px;
+}
+
+#main {
+    background: rgba(255,255,255,.3);
+    position: absolute;
+    left: 10%;
+    right: 30%;
+    top: 0;
+    min-height: 100%;
+}
+
+#sidebar {
+    position: fixed;
+    left: 70%;
+    margin-left: 30px;
+    right: 30px;
+    top: 0;
+    bottom: 0;
+}
+
+.info {
+    padding: 10px 30px;
+    margin: 10px;
+    margin-top: 30px;
+    background: #fff;
+    border-radius: 10px;
+    box-shadow: -1px 2px 0px rgba(0,0,0,.2);
+}
+
+.info ul {
+    padding-left: 17px;
+}
+
+.info .score {
+    font-family: "Consolas", monospace;
+    font-size: 0.8em;
+    color: dodgerblue;
 }
 
 /* M E N U */
@@ -126,30 +167,18 @@ h1 {
     background: url(user.png) no-repeat;
     background-size: 40px 40px;
 }
-.chat .day {
-    position: relative;
-    display: block;
-    text-align: center;
-    color: #c0c0c0;
-    height: 20px;
-    text-shadow: 7px 0px 0px #e5e5e5, 6px 0px 0px #e5e5e5, 5px 0px 0px #e5e5e5, 4px 0px 0px #e5e5e5, 3px 0px 0px #e5e5e5, 2px 0px 0px #e5e5e5, 1px 0px 0px #e5e5e5, 1px 0px 0px #e5e5e5, 0px 0px 0px #e5e5e5, -1px 0px 0px #e5e5e5, -2px 0px 0px #e5e5e5, -3px 0px 0px #e5e5e5, -4px 0px 0px #e5e5e5, -5px 0px 0px #e5e5e5, -6px 0px 0px #e5e5e5, -7px 0px 0px #e5e5e5;
-    box-shadow: inset 20px 0px 0px #e5e5e5, inset -20px 0px 0px #e5e5e5, inset 0px -2px 0px #d7d7d7;
-    line-height: 38px;
-    margin-top: 5px;
-    margin-bottom: 20px;
-    cursor: default;
-    -webkit-touch-callout: none;
-    -webkit-user-select: none;
-    -moz-user-select: none;
-    -ms-user-select: none;
+
+.progress .avatar {
+    background: url(loading.gif) no-repeat;
+    background-size: 40px 40px;
 }
 
 .other .msg {
     order: 1;
     border-top-left-radius: 0px;
-    box-shadow: -1px 2px 0px #D4D4D4;
+    box-shadow: -1px 2px 0px rgba(0,0,0,.2);
 }
-.other:before {
+.other:before, .progress:before {
     content: "";
     position: relative;
     top: 0px;
@@ -169,7 +198,7 @@ h1 {
 .self .msg {
     order: 1;
     border-bottom-right-radius: 0px;
-    box-shadow: 1px 2px 0px #D4D4D4;
+    box-shadow: 0px 2px 0px rgba(0, 0, 0, 0.07);
 }
 .self .avatar {
     order: 2;
@@ -185,7 +214,7 @@ h1 {
     border: 5px solid #fff;
     border-right-color: transparent;
     border-top-color: transparent;
-    box-shadow: 0px 2px 0px #D4D4D4;
+    box-shadow: 0px 2px 0px rgba(0, 0, 0, 0.07);
 }
 
 .msg {
@@ -196,9 +225,8 @@ h1 {
     box-shadow: 0px 2px 0px rgba(0, 0, 0, 0.07);
 }
 .msg p {
-    font-size: 0.8rem;
     margin: 0 0 0.2rem 0;
-    color: #777;
+    color: #444;
 }
 .msg img {
     position: relative;
@@ -226,7 +254,7 @@ h1 {
 
 .msg time {
     font-size: 0.7rem;
-    color: #ccc;
+    color: #bbb;
     margin-top: 3px;
     float: right;
     cursor: default;
@@ -237,49 +265,10 @@ h1 {
 }
 .msg time:before{
     content:"\f017";
-    color: #ddd;
+    color: #bbb;
     font-family: FontAwesome;
     display: inline-block;
     margin-right: 4px;
-}
-
-@-webikt-keyframes pulse {
-  from { opacity: 0; }
-  to { opacity: 0.5; }
-}
-
-::-webkit-scrollbar {
-    min-width: 12px;
-    width: 12px;
-    max-width: 12px;
-    min-height: 12px;
-    height: 12px;
-    max-height: 12px;
-    background: #e5e5e5;
-    box-shadow: inset 0px 50px 0px rgba(82,179,217,0.9), inset 0px -52px 0px #fafafa;
-}
-
-::-webkit-scrollbar-thumb {
-    background: #bbb;
-    border: none;
-    border-radius: 100px;
-    border: solid 3px #e5e5e5;
-    box-shadow: inset 0px 0px 3px #999;
-}
-
-::-webkit-scrollbar-thumb:hover {
-    background: #b0b0b0;
-  box-shadow: inset 0px 0px 3px #888;
-}
-
-::-webkit-scrollbar-thumb:active {
-    background: #aaa;
-  box-shadow: inset 0px 0px 3px #7f7f7f;
-}
-
-::-webkit-scrollbar-button {
-    display: block;
-    height: 26px;
 }
 
 /* T Y P E */
