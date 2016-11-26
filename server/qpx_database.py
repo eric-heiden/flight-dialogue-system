@@ -14,7 +14,7 @@ class QPXDatabase(Database):
                 },
                 "slice": [
                     {
-                        "date": query["DepartureDate"],
+                        "date": query["Departure Date"],
                         "origin": query["Origin"],
                         "destination": query["Destination"]
                     }

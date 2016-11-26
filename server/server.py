@@ -36,8 +36,8 @@ def socket_message(message):
                 'type': output.output_type.name,
                 'lines': output.lines
             })
+        emit('state', session["system"].user_state())
         eventlet.sleep(0)
-    emit('state', session["system"].user_state())
 
 
 @socketio.on('my broadcast event')

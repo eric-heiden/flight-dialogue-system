@@ -27,7 +27,7 @@ time_tagger = sutime.SUTime(jars, mark_time_ranges=True)
 # airline_names_path = glob.glob('**/airline_names.csv', recursive=True)[0]
 with open('nlu/airline_names.csv', 'r') as csvfile:
     airline_reader = csv.reader(csvfile, delimiter=',', quotechar='"')
-    AIRLINES = {row[1].upper() for row in airline_reader}
+    AIRLINES = {row[1].upper(): row[3].upper() or row[4].upper() for row in airline_reader}
 
 ###################
 # IMPORTANT WORDS #
@@ -122,7 +122,7 @@ def detect_entities(doc):
         elif ent.orth_.upper() in AIRLINES:
             if 'airlines' not in keywords:
                 keywords['airlines'] = []
-            keywords['airlines'].append(ent.orth_.upper())
+            keywords['airlines'].append(AIRLINES[ent.orth_.upper()])
         elif ent.label_ != 'DATE' and not is_iata(ent.orth_) and not is_numeral(ent.orth_):
             if o_d == 'origin':
                 keywords.update({'o_entity': ent.orth_.strip(PUNCTUATION)})
@@ -198,7 +198,7 @@ def parse_date(date):
         # correct for assumed earlier tag for day of week
         if date < today:
             date += datetime.timedelta(days=7)
-        return date
+        return str(date)
     except ValueError:
         return None
 
@@ -297,7 +297,7 @@ def detect_cabin_class(doc):
     keywords = {}
     text = doc.text.lower()
     if 'premium' in text or 'deluxe' in text:
-        keywords.update({'cabin_class': 'PREMIUM COACH'})
+        keywords.update({'cabin_class': 'PREMIUM_COACH'})
         return keywords
     for cabin_class in CABIN_CLASS_WORDS:
         if cabin_class in doc.text.lower():

@@ -76,12 +76,12 @@ class Manager:
         )
         if len(values) == 0:
             return False, 'no attribute values provided'
-        if len(values) > 1:
-            pruned = self.available_fields[attribute.name].prune(values)
-            print('Pruned %i values to %i.' % (len(values), len(pruned)))
-            values = pruned
         if not isinstance(attribute, str):
             attribute = attribute.name
+        if len(values) > 1:
+            pruned = self.available_fields[attribute].prune(values)
+            print('Pruned %i values to %i.' % (len(values), len(pruned)))
+            values = pruned
         self.user_state[attribute] = values
 
         yield "Updating data..."

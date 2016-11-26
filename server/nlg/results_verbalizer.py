@@ -23,6 +23,10 @@ NO_FLIGHTS = [
 
 # SUM_NUM_OF_ITINERARIES
 # <A> number of itineraries
+SUM_NUM_ITINERARIES_SG = [
+    "There is only one itinerary matching your criteria.",
+    "I've found one possible trip that meets your specifications.",
+]
 SUM_NUM_ITINERARIES_PL = [
     "There are <A> itineraries matching your criteria.",
     "I've found <A> possible trips that meet your specifications.",
