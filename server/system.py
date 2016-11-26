@@ -13,7 +13,7 @@ from nlg.results_verbalizer import verbalize
 from qpx_database import QPXDatabase
 
 
-OutputType = Enum('OutputType', 'greeting progress feedback question askconfirm finish')
+OutputType = Enum('OutputType', 'greeting progress feedback question finish')
 
 
 class Output:
@@ -68,7 +68,7 @@ class Pipeline:
     def show_status(self, status: Tuple[bool, Union[str, int]]) -> Generator[Output, None, None]:
         if status[1] is not None and status[1] == 1:
             yield Output(lines=["I found the perfect flight for you!"]
-                               + verbalize(self.manager.possible_data, 1),
+                               + verbalize(self.manager.possible_data, 2),
                          output_type=OutputType.finish)
         else:
             feedback = self.speaker.inform(status)

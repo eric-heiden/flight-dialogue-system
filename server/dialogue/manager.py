@@ -1,5 +1,6 @@
 from collections import namedtuple
 from typing import Union, Generator, Tuple
+from datetime import datetime
 
 import sys
 
@@ -9,7 +10,7 @@ from dialogue.field import Field
 MAX_DATA = 2500
 
 
-DialogueTurn = namedtuple("DialogueTurn", ["type", "data"])
+DialogueTurn = namedtuple("DialogueTurn", ["type", "data", "time"])
 
 
 class Manager:
@@ -42,7 +43,7 @@ class Manager:
         for name in self.minimal_fields:
             if name not in self.user_state:
                 self.interaction_sequence.append(
-                    DialogueTurn("question", name)
+                    DialogueTurn("question", name, datetime.now())
                 )
                 return self.available_fields[name], None
 
@@ -63,7 +64,7 @@ class Manager:
 
         self.asked_questions.add(best_field.name)
         self.interaction_sequence.append(
-            DialogueTurn("question", best_field.name)
+            DialogueTurn("question", best_field.name, datetime.now())
         )
         return best_field, best_field.category_count(self.possible_data)
 
@@ -72,7 +73,7 @@ class Manager:
     # otherwise True, number of possible flights
     def inform(self, attribute: Union[str, Field], values: [(str, float)]) -> Generator[str, None, Tuple[bool, Union[str, int]]]:
         self.interaction_sequence.append(
-            DialogueTurn("answer", (attribute, values))
+            DialogueTurn("answer", (attribute, values), datetime.now())
         )
         if len(values) == 0:
             return False, 'no attribute values provided'
@@ -91,7 +92,7 @@ class Manager:
     # provides feedback to a question which updates the attribute's score
     def feedback(self, attribute: str, positive: bool):
         self.interaction_sequence.append(
-            DialogueTurn("feedback", (attribute, positive))
+            DialogueTurn("feedback", (attribute, positive), datetime.now())
         )
         self.available_fields[attribute].score *= 1.1 if positive else 0.9
         pass
