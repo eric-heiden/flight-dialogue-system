@@ -5,6 +5,7 @@ import re
 import pickle
 import csv
 import datetime
+import json
 
 ############################
 # TEMPLATES/STORED PHRASES #
@@ -37,7 +38,8 @@ SUM_NUM_NONSTOP_ITINERARIES_SG = [
     "Of all the matching trips, only one is direct both ways."
 ]
 SUM_NUM_NONSTOP_ITINERARIES_PL = [
-    "Of all the matching trips, <A> are non-stop both ways."
+    "Of all the matching trips, <A> are non-stop.",
+    "<A> of the flights I've found are direct.",
 ]
 
 # <A> cheapest, <B> costliest, <C> average
@@ -96,10 +98,10 @@ def sum_num_nonstop_itineraries(results):
         if flight['legs'] < 3:  # assumes two-city itineraries
             nonstop += 1
     if nonstop == 1:
-        template = random.choice(SUM_NUM_ITINERARIES_SG)
+        template = random.choice(SUM_NUM_NONSTOP_ITINERARIES_SG)
         return template
     elif nonstop > 1:
-        template = random.choice(SUM_NUM_ITINERARIES_PL)
+        template = random.choice(SUM_NUM_NONSTOP_ITINERARIES_PL)
         return re.sub('<A>', str(nonstop), template)
     else:
         return None
@@ -313,9 +315,9 @@ def verbalize(results, summarize_when, options=['count', 'nonstop', 'price', 'ca
     if len(results) < 1:
         return [random.choice(NO_FLIGHTS)]
     elif len(results) >= summarize_when:
-        return list(set(summarize(results, options)))
+        return summarize(results, options)
     else:
-        return list(set(tell_all(results)))
+        return tell_all(results)
 
 
 #########
@@ -323,12 +325,18 @@ def verbalize(results, summarize_when, options=['count', 'nonstop', 'price', 'ca
 #########
 
 def main():
-    with open('nlg/sample_extracted_flight.pickle', 'rb') as f:
-        flight = pickle.load(f)
+#     with open('nlg/sample_extracted_flight.pickle', 'rb') as f:
+#         flight = pickle.load(f)
     options = ['count', 'nonstop', 'price', 'carriers', 'outbound_departure_time',
                'outbound_arrival_time']
-    output = verbalize(flight, 4, options)
-    #  print(flight)
+#     output = verbalize(flight, 4, options)
+#     #  print(flight)
+#     for line in output:
+#         print(line)
+    with open('nlg/system_output.json') as json_data:
+        d = json.load(json_data)
+        print(json.dumps(d, sort_keys=True, indent=4))
+    output = verbalize(d['data'], 4, options)
     for line in output:
         print(line)
 
