@@ -98,13 +98,12 @@ class Speaker:
                 output.append(".")
             else:
                 output.append(" All available flights are on {}.".format(lookup_airline_name(e[0])))
-        elif field.name == "NonStop":
-            if len(e) > 1:
-                non_stop = e[0][1] if e[0][0] == "True" else e[1][1]
-                with_stop = e[0][1] if e[0][0] == "False" else e[1][1]
-                output.append(" {} of the {} flights I've found are non-stop.".format(non_stop, with_stop))
-            return " I found " + self.say_list(
-                list(map(lambda x: '%i flights with %s = %s' % (x[1], field.name, x[0]), e)))
+        elif field.name == "NonStop" and len(e) > 1:
+            print("NonStop Flights", e)
+            print("LEN =", len(e))
+            non_stop = e[0][1] if e[0][0] == "True" else e[1][1]
+            with_stop = e[0][1] if e[0][0] == "False" else e[1][1]
+            output.append(" {} of the {} flights I've found are non-stop.".format(non_stop, with_stop))
         elif field.name == "Price":
             return " I found " + self.say_list(
                 list(map(lambda x: '%i flights with %s = %s' % (x[1], field.name, x[0]), e)))
