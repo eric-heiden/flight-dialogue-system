@@ -80,7 +80,7 @@ class Speaker:
                     output.append(", {} on {}".format(e[i][1], e[i][0]))
                 output.append(", and {} on {}".format(e[-1][1], e[-1][0]))
             output.append(".")
-        elif field.name == "Cabin":
+        elif field.name == "Cabin Class":
             output.append(" There's {} flights with seating in {}".format(
                 e[0][1], CABIN_TERMS[e[0][0]]))
             if len(e) > 1:
