@@ -293,7 +293,7 @@ def tell_all(results):
 # "PUBLIC" FUNCTIONS #
 ######################
 
-def verbalize(results, summarize_when, options=['count', 'nonstop', 'price', 'carriers', 'outbound_departure_time',
+def verbalize(results, summarize_when, options=['count', 'price', 'carriers', 'outbound_departure_time',
                'outbound_arrival_time']):
     '''
 	@param: results -- from qpx.extract_flights
@@ -327,7 +327,7 @@ def verbalize(results, summarize_when, options=['count', 'nonstop', 'price', 'ca
 def main():
 #     with open('nlg/sample_extracted_flight.pickle', 'rb') as f:
 #         flight = pickle.load(f)
-    options = ['count', 'nonstop', 'price', 'carriers', 'outbound_departure_time',
+    options = ['count', 'price', 'carriers', 'outbound_departure_time',
                'outbound_arrival_time']
 #     output = verbalize(flight, 4, options)
 #     #  print(flight)
