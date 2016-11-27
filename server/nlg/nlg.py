@@ -51,7 +51,6 @@ class Speaker:
         return ', '.join(l[:-2]) + ', ' + self.say_list(l[-2:])
 
     def results_for_field(self, field, e) -> str:
-        # minimal fields are not included
         output = []
         if field.name == "Destination":
             output.append(" {} flights go to {}".format(e[0][1], e[0][0]))
@@ -102,12 +101,20 @@ class Speaker:
             if len(e) > 1:
                 non_stop = e[0][1] if e[0][0] == "True" else e[1][1]
                 with_stop = e[0][1] if e[0][0] == "False" else e[1][1]
-                output.append(" {} of the {} flights I've found are non-stop.".format(non_stop, with_stop))
-            return " I found " + self.say_list(
-                list(map(lambda x: '%i flights with %s = %s' % (x[1], field.name, x[0]), e)))
+                output.append(" {} of the {} flights I've found are non-stop.".format(non_stop, non_stop + with_stop))
+            elif e[0][0] == "True":
+                output.append(" All of the flights I see are non-stop.")
+            elif e[0][0] == "False":
+                output.append(" None of the flights I found are direct.")
         elif field.name == "Price":
-            return " I found " + self.say_list(
-                list(map(lambda x: '%i flights with %s = %s' % (x[1], field.name, x[0]), e)))
+            if len(e) == 1:
+                output.append(" I'd say all of them are {}".format(e[0][0]))
+            if len(e) > 1:
+                output.append(" I'd say {} of them are {}".format(e[0][1], e[0][0]))
+                for i in range(1, len(e) - 1):
+                    output.append(", {} are {}".format(e[i][1], e[i][0]))
+                output.append(", and {} are {}".format(e[-1][1], e[-1][0]))
+            output.append(".")
         else:
             return " I found " + self.say_list(
                 list(map(lambda x: '%i flights with %s = %s' % (x[1], field.name, x[0]), e)))
