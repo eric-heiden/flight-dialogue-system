@@ -77,7 +77,7 @@ ADDITIONAL_ITINERARY_INTRODUCTION = [
 ITINERARY = [
     "on <A> at <B> which gets in at <C>. The return flight is at <D> and departs at <E>. The airfare for this itinerary is <F>.",
     "with <A>, departing at <B> and arriving at your destination at <C>. You'd leave from there at <D> and get in at <E>. This would set you back <F>.",
-    "on <A> that leaves at <B> and gets in at <C>, with the return flight leaving at <D> and arriving back at <E>. The cost for this would be <F>.",
+    "on <A>. It leaves at <B> and gets in at <C>, with the return flight leaving at <D> and arriving back at <E>. The cost for this would be <F>.",
 ]
 
 
