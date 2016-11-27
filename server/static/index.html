@@ -24,6 +24,20 @@
                 </table>
             </li>
         </ul>
+        <p ng-if="statefeedback">
+            Has the User State been updated correctly?
+            <span class="feedback">
+                <a href="#" title="Yes" ng-click="stateUpdateFeedback($event, true)">
+                    👍
+                </a>
+                <a href="#" title="No" ng-click="stateUpdateFeedback($event, false)">
+                    👎
+                </a>
+            </span>
+        </p>
+        <p ng-if="!statefeedback && stateUpdateAccuracy">
+            User State update accuracy: {{stateUpdateAccuracy}}
+        </p>
     </div>
 </div>
 <div id="main">

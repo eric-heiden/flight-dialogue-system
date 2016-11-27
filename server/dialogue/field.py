@@ -110,10 +110,9 @@ class Field:
 
         #  values = values[:min(len(values), 8)]
         scores = [score for _, score in values]
-        print("Pruning")
+        print("Pruning", self.name)
         print(values)
         X = np.array(list(zip(scores, np.zeros(len(scores)))), dtype=np.float)
-        print(X)
         try:
             bandwidth = estimate_bandwidth(X, quantile=0.3)
             ms = MeanShift(bandwidth=bandwidth, bin_seeding=False, cluster_all=False)

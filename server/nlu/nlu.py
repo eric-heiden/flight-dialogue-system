@@ -356,7 +356,7 @@ def detect_qualifiers(doc):
     qualifiers |= detect_flight_features(doc)
     qualifiers = standardize_qualifiers(qualifiers)
     if qualifiers:
-        return {'qualifiers': qualifiers}
+        return {'qualifiers': list(qualifiers)}
     else:
         return {}
 

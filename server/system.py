@@ -1,4 +1,5 @@
-import json
+import json, copy
+from datetime import datetime
 from enum import Enum
 from typing import Union, Generator, Tuple
 
@@ -7,7 +8,7 @@ import sys, re
 from qpx.qpx import stringify
 from nlu.ResolveAirport import find_matches
 # from nlu.nlu import extract_info
-from dialogue.manager import Manager
+from dialogue.manager import Manager, DialogueTurn
 from dialogue.field import Field, NumField, NumCategory
 from nlg.nlg import Speaker
 from nlg.results_verbalizer import verbalize
@@ -17,9 +18,10 @@ OutputType = Enum('OutputType', 'greeting progress error feedback question finis
 
 
 class Output:
-    def __init__(self, lines: [str] = [], output_type: Enum = OutputType.greeting):
+    def __init__(self, lines: [str] = [], output_type: Enum = OutputType.greeting, question: str = ""):
         self.lines = lines
         self.output_type = output_type
+        self.question = question
 
 
 class Pipeline:
@@ -105,6 +107,16 @@ class Pipeline:
                 for airline in value:
                     airlines.append((airline, 1))
                 status = yield from self.manager.inform("Carrier", airlines)
+            elif key == "qualifiers":
+                price_qualifiers = ["cheap", "moderate", "expensive"]
+                price_settings = []
+                for qualifier in value:
+                    if qualifier in price_qualifiers:
+                        price_settings.append((qualifier, 1))
+                if len(price_settings) > 0:
+                    status = yield from self.manager.inform("Price", price_settings)
+                else:
+                    print("Could not interpret qualifiers", value)
 
         if status is not None:
             yield from self.show_status(status)
@@ -131,6 +143,13 @@ class Pipeline:
         utterance = utterance.lower()
         print('Utterance:', utterance)
         print('Extracted:', extracted)
+        self.manager.interaction_sequence.append(
+            DialogueTurn("input",
+                         {
+                             "utterance": utterance,
+                             "extracted": copy.deepcopy(extracted)
+                         },
+                         datetime.now()))
         status = None
 
         if extracted["dialog_act"] == "statement":
@@ -171,6 +190,7 @@ class Pipeline:
         # else:
         #     answer = [(utterance, 1)]
 
+        # did we find the perfect flight?
         if status is not None and status[1] is not None and status[1] == 1:
             self.show_status(status)
             return

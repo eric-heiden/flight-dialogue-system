@@ -51,6 +51,24 @@ def hello():
     return app.send_static_file('index.html')
 
 
+@socketio.on('stateUpdateFeedback')
+def state_update_feedback(feedback):
+    print("Got state update feedback", feedback)
+    if not "positive" in feedback:
+        return
+    stateUpdateAccuracy = json.load(open("stateUpdateAccuracy.json", "r"))
+    stateUpdateAccuracy["positive" if feedback["positive"] else "negative"] += 1
+    emit('stateUpdateAccuracy', {
+        'accuracy': "%.2f%%" %
+                    (stateUpdateAccuracy["positive"]*100./(stateUpdateAccuracy["positive"]+stateUpdateAccuracy["negative"]))
+    }, broadcast=True)
+    json.dump(stateUpdateAccuracy, open("stateUpdateAccuracy.json", "w"), indent=4)
+
+    if request.sid not in sessions:
+        sessions[request.sid] = DialogueSession(request.sid)
+    sessions[request.sid].system.manager.interaction_sequence.append(DialogueTurn("stateUpdateAccuracyFeedback = positive", feedback["positive"], datetime.now()))
+
+
 @socketio.on('message')
 def socket_message(message):
     print('Session:', request.sid)
@@ -67,7 +85,8 @@ def socket_message(message):
         else:
             emit('message', {
                 'type': output.output_type.name,
-                'lines': output.lines
+                'lines': output.lines,
+                'field': output.question
             })
             sessions[request.sid].system.manager.interaction_sequence.append(DialogueTurn("output", {
                 'type': output.output_type.name,
@@ -89,7 +108,8 @@ def socket_connect():
     for output in sessions[request.sid].system.output():
         emit('message', {
             'type': output.output_type.name,
-            'lines': output.lines
+            'lines': output.lines,
+            'question': output.question
         })
     emit('state', sessions[request.sid].system.user_state())
     print("New user connected")
@@ -107,7 +127,8 @@ def save_log(session_data):
         session_log = {"sessions": []}
 
     session_log["sessions"].append(session_data)
-    json.dump(session_log, open(filename, "w"), indent=4)
+    with open(filename, "w") as file:
+        json.dump(session_log, file, indent=4)
 
 
 @socketio.on('disconnect')
@@ -118,9 +139,10 @@ def socket_disconnect():
         sessions[request.sid].ended = str(datetime.now())
         try:
             session_data = sessions[request.sid].json()
+            save_log(session_data)
             #  del sessions[request.sid]
-            thr = threading.Thread(target=save_log, args=[session_data], kwargs={})
-            thr.start()
+            # thr = threading.Thread(target=save_log, args=[session_data], kwargs={})
+            # thr.start()
             print("Saved log for session %s." % request.sid)
             #  save_log(session_data)
         except:
