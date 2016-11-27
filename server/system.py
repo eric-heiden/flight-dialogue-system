@@ -69,8 +69,7 @@ class Pipeline:
 
     def show_status(self, status: Tuple[bool, Union[str, int]]) -> Generator[Output, None, None]:
         if status[1] is not None and status[1] == 1:
-            yield Output(lines=["I found the perfect flight for you!"]
-                               + verbalize(self.manager.possible_data, 2),
+            yield Output(lines=["I found the perfect flight for you!"],
                          output_type=OutputType.finish)
         else:
             feedback = self.speaker.inform(status)

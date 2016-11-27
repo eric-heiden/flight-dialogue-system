@@ -15,6 +15,13 @@ app.factory('socket', ['$rootScope', function ($rootScope) {
 
 app.controller('ChatCtrl', function ($scope, $timeout, socket) {
     $scope.chat = [];
+    $scope.chat.push({
+        image: "static/airline_wordclouds/aer-lingus.png",
+        type: "airline-review",
+        airline: "Aer Lingus",
+        partner: "other",
+        time: moment().format("HH:mm")
+    });
     $scope.state = {};
     $scope.progress = undefined;
     $scope.statefeedback = false;
@@ -52,17 +59,20 @@ app.controller('ChatCtrl', function ($scope, $timeout, socket) {
     });
     $scope.input = "";
     $scope.send = function() {
+        $scope.input = $scope.input.trim();
+        if ($scope.input.length == 0)
+            return;
+        $scope.statefeedback = false;
         socket.emit('message', {"query": $scope.input});
         $scope.chat.push({
             partner: "self",
             time: moment().format("HH:mm"),
             text: $scope.input
         });
+        $scope.input = "";
         $timeout(function() {
           window.scrollTo(0,document.body.scrollHeight);
         }, 0, false);
-        $scope.input = "";
-        $scope.statefeedback = false;
     };
     $scope.stateUpdateFeedback = function($event, positive) {
         $event.preventDefault();

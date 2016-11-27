@@ -44,7 +44,7 @@
 <ol class="chat">
     <li ng-repeat="entry in chat" ng-class="entry.partner">
         <div class="avatar"></div>
-        <div class="msg">
+        <div class="msg" ng-if="entry.text || entry.lines">
             <p ng-repeat="line in entry.lines">{{line}}</p>
             <p ng-if="entry.text">{{entry.text}}</p>
             <span ng-if="entry.partner == 'other' && entry.type == 'question'" class="feedback">
@@ -55,6 +55,25 @@
                     👎
                 </a>
             </span>
+            <time>{{entry.time}}</time>
+        </div>
+        <div class="msg" ng-if="entry.image">
+            <p>Here are some aspects from various reviews on <b>{{entry.airline}}</b></p>
+            <p class="wordclouds">
+                <span class="img neg-neg" ng-style="{'background-image':'url({{entry.image}})'}">
+                    <span class="label">Negative aspects in negative reviews</span>
+                </span>
+                <span class="img pos-neg" ng-style="{'background-image':'url({{entry.image}})'}">
+                    <span class="label">Positive aspects in negative reviews</span>
+                </span>
+                <span class="img neg-pos" ng-style="{'background-image':'url({{entry.image}})'}">
+                    <span class="label">Negative aspects in positive reviews</span>
+                </span>
+                <span class="img pos-pos" ng-style="{'background-image':'url({{entry.image}})'}">
+                    <span class="label">Positive aspects in positive reviews</span>
+                </span>
+            </p>
+            <br style="clear:both"/>
             <time>{{entry.time}}</time>
         </div>
     </li>

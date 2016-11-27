@@ -154,6 +154,8 @@ class Manager:
 
     # remove values from user state that do not appear in the available flights data
     def update_user_state(self):
+        if len(self.possible_data) == 0:
+            return
         for key, values in self.user_state.items():
             existing_values = set()
             for data_entry in self.possible_data:

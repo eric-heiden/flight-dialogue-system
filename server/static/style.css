@@ -10,11 +10,11 @@ html, body {
     background: linear-gradient(rgba(82,179,217,0.9), rgba(82,179,217,0.5));
     background-attachment: fixed;
 }
-::selection{
+::selection {
   background: rgba(82,179,217,0.3);
   color: inherit;
 }
-a{
+a {
   color: rgba(82,179,217,0.9);
 }
 a:link,a:hover,a:visited {
@@ -134,8 +134,8 @@ h1 {
     list-style: none;
     background: none;
     margin: 0;
-    padding: 0 0 50px 0;
-    margin-top: 60px;
+    padding: 0 0 80px 0;
+    margin-top: 20px;
     margin-bottom: 10px;
 }
 .chat li {
@@ -146,6 +146,7 @@ h1 {
 .chat .avatar {
     width: 40px;
     height: 40px;
+    min-width: 40px;
     position: relative;
     display: block;
     z-index: 2;
@@ -162,10 +163,12 @@ h1 {
 .other .avatar {
     background: url(robot.jpg) no-repeat;
     background-size: 40px 40px;
+    margin-right: 10px;
 }
 .self .avatar {
     background: url(user.png) no-repeat;
     background-size: 40px 40px;
+    margin-left: 10px;
 }
 
 .progress .avatar {
@@ -177,13 +180,17 @@ h1 {
     order: 1;
     border-top-left-radius: 0px;
     box-shadow: -1px 2px 0px rgba(0,0,0,.2);
+    margin-top: 20px;
+}
+.chat li.other {
+    margin-bottom: -20px;
 }
 .other:before, .progress:before {
     content: "";
     position: relative;
-    top: 0px;
+    top: 20px;
     right: 0px;
-    left: 40px;
+    left: 50px;
     width: 0px;
     height: 0px;
     border: 5px solid #fff;
@@ -194,6 +201,10 @@ h1 {
 .self {
     justify-content: flex-end;
     align-items: flex-end;
+}
+li.self {
+    margin-top: 20px;
+    margin-bottom: -20px;
 }
 .self .msg {
     order: 1;
@@ -208,7 +219,7 @@ h1 {
     position: relative;
     display: inline-block;
     bottom: 19px;
-    right: 0px;
+    right: 10px;
     width: 0px;
     height: 0px;
     border: 5px solid #fff;
@@ -232,6 +243,7 @@ h1 {
     position: relative;
     display: block;
     width: 450px;
+    max-height: 450px;
     border-radius: 5px;
     box-shadow: 0px 0px 3px #eee;
     transition: all .4s cubic-bezier(0.565, -0.260, 0.255, 1.410);
@@ -240,6 +252,53 @@ h1 {
     -webkit-user-select: none;
     -moz-user-select: none;
     -ms-user-select: none;
+}
+.wordclouds {
+    width: 410px;
+}
+.wordclouds span.img {
+    position: relative;
+    width: 200px;
+    height: 200px;
+    float: left;
+    margin-right: 5px;
+    margin-bottom: 5px;
+}
+.wordclouds span.label {
+    position: absolute;
+    background: #fff;
+    top: 50%;
+    left: 50%;
+    margin-top: -40px;
+    margin-left: -85px;
+    z-index: 10;
+    padding: 10px 20px;
+    width: 130px;
+    text-align: center;
+    display: none;
+}
+.wordclouds span.img:hover span.label {
+    display: block;
+}
+.msg .neg-neg {
+    background-position: -69px -69px;
+    background-size: 560px 600px;
+    background-repeat: no-repeat;
+}
+.msg .pos-neg {
+    background-position: -305px -69px;
+    background-size: 560px 600px;
+    background-repeat: no-repeat;
+}
+.msg .neg-pos {
+    background-position: -69px -325px;
+    background-size: 560px 600px;
+    background-repeat: no-repeat;
+}
+.msg .pos-pos {
+    background-position: -305px -325px;
+    background-size: 560px 600px;
+    background-repeat: no-repeat;
 }
 @media screen and (max-width: 800px) {
     .msg img {
