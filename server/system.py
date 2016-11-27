@@ -193,7 +193,7 @@ class Pipeline:
             self.generate_question()
             yield Output([
                 "Hello!",
-                "I'm your personal assistant to help you find the best flight 😊"
+                "I'm your personal assistant for helping you find the best flight 😊"
             ])
         yield Output(
             lines=[self.speaker.ask(self.last_question, self.expected_answer)],
