@@ -315,7 +315,7 @@ def detect_cabin_class(doc):
 
 
 COMPARATIVE_AND_SUPERLATIVE_POS = {'JJR', 'JJS', 'RBR', 'RBS'}
-OTHER_FEATURES = {'direct', 'non-stop', 'nonstop', 'the first', 'least expensive', 'least costly'}
+OTHER_FEATURES = {'direct', 'non-stop', 'nonstop', 'the first', 'least expensive', 'least costly', 'cheap', 'moderate', 'expensive'}
 STANDARDIZED_FEATURES = {
     'direct': {'direct', 'non-stop', 'nonstop'},
     'earlier': {'earlier', 'before'},
@@ -323,6 +323,9 @@ STANDARDIZED_FEATURES = {
     'earliest': {'the first', 'earliest'},
     'latest': {'last', 'latest'},
     'cheapest': {'cheapest', 'inexpensive', 'least expensive', 'least costly'},
+    'cheap': {'cheap'},
+    'moderate': {'moderate'},
+    'expensive': {'expensive'},
 }
 
 
