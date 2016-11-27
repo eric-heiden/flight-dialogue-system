@@ -52,23 +52,26 @@ import json, sys, re
 
 from system import Pipeline
 from nlg.nlg import Speaker
-from nlu.nlu import extract_info
+#from nlu.nlu import extract_info
 
 pipeline = Pipeline()
 
 print(list(pipeline.manager.inform("Destination", [("AMS", 1)])))
 print(list(pipeline.manager.inform("Origin", [("LAX", 1)])))
 print(list(pipeline.manager.inform("Departure Date", [("2016-12-09", 1)])))
+print(len(pipeline.manager.possible_data))
+print(list(pipeline.manager.inform("Price", [("moderate", 1)])))
+print(len(pipeline.manager.possible_data))
 
 q, expected = pipeline.manager.next_question()
 print((q, expected))
 
-extracted = extract_info("I want to fly from Los Angeles to London on next Tuesday")
-print(extracted)
-print(extract_info("I would prefer to fly premium coach class"))
-print(extract_info("I want to fly with American Airlines"))
-print(extract_info("AMS"))
-print(extract_info("LAX"))
-print(extract_info("yes"))
-print(extract_info("no"))
-print(extract_info("next wednesday"))
+# extracted = extract_info("I want to fly from Los Angeles to London on next Tuesday")
+# print(extracted)
+# print(extract_info("I would prefer to fly premium coach class"))
+# print(extract_info("I want to fly with American Airlines"))
+# print(extract_info("AMS"))
+# print(extract_info("LAX"))
+# print(extract_info("yes"))
+# print(extract_info("no"))
+# print(extract_info("next wednesday"))

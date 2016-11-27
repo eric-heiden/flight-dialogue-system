@@ -1,3 +1,4 @@
+import json
 from collections import defaultdict
 from typing import Union
 
@@ -48,7 +49,7 @@ class Speaker:
         if len(l) == 2:
             return '{l[0]} and {l[1]}'.format(l=l)
         return ', '.join(l[:-2]) + ', ' + self.say_list(l[-2:])
-    
+
     def results_for_field(self, field, e) -> str:
         # minimal fields are not included
         output = []
@@ -98,11 +99,14 @@ class Speaker:
             else:
                 output.append(" All available flights are on {}.".format(lookup_airline_name(e[0])))
         elif field.name == "NonStop":
-            return " I found " + self.say_list(list(map(lambda x: '%i flights with %s = %s' % (x[1], field.name, x[0]), expected.items())))
+            return " I found " + self.say_list(
+                list(map(lambda x: '%i flights with %s = %s' % (x[1], field.name, x[0]), e)))
         elif field.name == "Price":
-            return " I found " + self.say_list(list(map(lambda x: '%i flights with %s = %s' % (x[1], field.name, x[0]), expected.items())))
+            return " I found " + self.say_list(
+                list(map(lambda x: '%i flights with %s = %s' % (x[1], field.name, x[0]), e)))
         else:
-        	return " I found " + self.say_list(list(map(lambda x: '%i flights with %s = %s' % (x[1], field.name, x[0]), expected.items())))
+            return " I found " + self.say_list(
+                list(map(lambda x: '%i flights with %s = %s' % (x[1], field.name, x[0]), e)))
         return "".join(output)
 
     def ask(self, field: Field, expected: {str: int}) -> str:
@@ -114,8 +118,8 @@ class Speaker:
 
         hint = ""
         if expected is not None and len(expected) > 0:
-#             hint = " I found " + self.say_list(list(map(lambda x: '%i flights with %s = %s' % (x[1], field.name, x[0]), expected.items())))
-            hint = results_for_field(self, field, list(expected.items()))
+            #             hint = " I found " + self.say_list(list(map(lambda x: '%i flights with %s = %s' % (x[1], field.name, x[0]), expected.items())))
+            hint = self.results_for_field(field, list(expected.items()))
 
         if field.name == "Origin":
             return self.generic("place of departure", [
@@ -138,9 +142,10 @@ class Speaker:
         return self.generic(field.name.lower()) + hint
 
     # give feedback for Manager.inform()
-    def inform(self, feedback: (bool, Union[str,int])) -> [str]:
+    def inform(self, feedback: (bool, Union[str, int])) -> [str]:
         success, data = feedback
         if success:
+            json.dump({"data": self.manager.possible_data}, open("possible_data.json", "w"), indent=4)
             if data is None or data <= 0:
                 return [random.choice(thanks).capitalize() + "! " + random.choice([
                     "Now, before I can show you some flights I need more information.",

@@ -108,28 +108,41 @@ class Field:
         # perform MeanShift clustering
         from sklearn.cluster import MeanShift, estimate_bandwidth
 
+        #  values = values[:min(len(values), 8)]
         scores = [score for _, score in values]
+        print("Pruning")
+        print(values)
         X = np.array(list(zip(scores, np.zeros(len(scores)))), dtype=np.float)
-        bandwidth = estimate_bandwidth(X, quantile=0.1)
-        ms = MeanShift(bandwidth=bandwidth, bin_seeding=True)
-        ms.fit(X)
-        labels = ms.labels_
+        print(X)
+        try:
+            bandwidth = estimate_bandwidth(X, quantile=0.3)
+            ms = MeanShift(bandwidth=bandwidth, bin_seeding=False, cluster_all=False)
+            print("Fitting...")
+            ms.fit(X)
+            print("Fitting finished")
+            labels = ms.labels_
 
-        labels_unique = np.unique(labels)
-        n_clusters_ = len(labels_unique)
+            labels_unique = np.unique(labels)
+            n_clusters_ = len(labels_unique)
 
-        ms_clusters = []
-        for k in range(n_clusters_):
-            my_members = labels == k
-            print("cluster %i: %s" % (k, str(X[my_members, 0])))
-            ms_clusters.append(X[my_members, 0])
+            ms_clusters = []
+            for k in range(n_clusters_):
+                my_members = labels == k
+                print("cluster %i: %s" % (k, str(X[my_members, 0])))
+                ms_clusters.append(X[my_members, 0])
 
-        max_cluster = ms_clusters[0]
-        for c in ms_clusters[1:]:
-            if max(c) > max(max_cluster):
-                max_cluster = c
+            max_cluster = ms_clusters[0]
+            for c in ms_clusters[1:]:
+                if len(c) == 0:
+                    continue
+                if max(c) > max(max_cluster):
+                    max_cluster = c
 
-        return list(filter(lambda x: x[1] >= min(max_cluster), values))
+            return list(filter(lambda x: x[1] >= min(max_cluster), values))
+        except Exception as e:
+            print("Error: Could not prune values using MeanShift clustering.", e)
+            print("Selecting only top-scoring value.")
+            return [values[0]]
 
 
 NumCategory = namedtuple("NumCategory", ["name", "lb", "ub"])
@@ -147,9 +160,9 @@ class NumField(Field):
         self.categories = categories
         self.parse_value = parse_value
 
-    def categorize(self, selected: str) -> str:
+    def categorize(self, selected: str) -> [str]:
         selected = self.parse_value(selected)
         for category in self.categories:
             if category.lb <= selected <= category.ub:
-                return category.name
-        return None
+                return [category.name]
+        return []

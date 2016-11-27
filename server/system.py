@@ -1,3 +1,4 @@
+import json
 from enum import Enum
 from typing import Union, Generator, Tuple
 
@@ -5,15 +6,14 @@ import sys, re
 
 from qpx.qpx import stringify
 from nlu.ResolveAirport import find_matches
-from nlu.nlu import extract_info
+# from nlu.nlu import extract_info
 from dialogue.manager import Manager
 from dialogue.field import Field, NumField, NumCategory
 from nlg.nlg import Speaker
 from nlg.results_verbalizer import verbalize
 from qpx_database import QPXDatabase
 
-
-OutputType = Enum('OutputType', 'greeting progress feedback question finish')
+OutputType = Enum('OutputType', 'greeting progress error feedback question finish')
 
 
 class Output:
@@ -30,12 +30,12 @@ class Pipeline:
         ArrivalDate = Field("Arrival Date", ["arrivalDate"])
         NonStop = Field("NonStop", ["nonstop"])
         Price = NumField("Price",
-                ["price"],
-                [NumCategory("cheap", 0, 250),
-                 NumCategory("moderate", 250, 1400),
-                 NumCategory("expensive", 1400, sys.maxsize)],
-                # parse price from string, e.g. "USD83.10"
-                lambda raw: float(re.match(".*?([0-9\.]+)", raw).group(1)))
+                         ["price"],
+                         [NumCategory("cheap", 0, 250),
+                          NumCategory("moderate", 250, 1400),
+                          NumCategory("expensive", 1400, sys.maxsize)],
+                         # parse price from string, e.g. "USD83.10"
+                         lambda raw: float(re.match(".*?([0-9\.]+)", raw).group(1)))
         Carrier = Field("Carrier", ["carriers"])
         Cabin = Field("Cabin Class", ["cabins"])
         self.manager = Manager(
@@ -58,7 +58,7 @@ class Pipeline:
         self.expected_answer = None
         self.question_counter = 0
 
-    def user_state(self) -> {str: [(Union[str,int,float], float)]}:
+    def user_state(self) -> {str: [(Union[str, int, float], float)]}:
         return self.manager.user_state
 
     def generate_question(self):
@@ -94,7 +94,7 @@ class Pipeline:
                 which = self.last_question.name
                 yield Output(lines=["Resolving %s airport code..." % which.lower()],
                              output_type=OutputType.progress)
-                airports = find_matches(value)
+                airports = find_matches(value[0])
                 status = yield from self.manager.inform(which, airports)
             elif key in direct_nlu_matches:
                 status = yield from self.manager.inform(direct_nlu_matches[key], [(value, 1)])
@@ -111,10 +111,22 @@ class Pipeline:
             return True
         return False
 
+    # matches utterance to expected values using fuzzy string matching
+    def match_expected(self, utterance: str) -> [Tuple[str, float]]:
+        from difflib import SequenceMatcher
+
+        def score(a: str, b: str) -> float:
+            return SequenceMatcher(None, a.lower(), b.lower()).ratio()
+
+        return list(map(lambda x: (x, score(utterance, x)), self.expected_answer.keys()))
+
     def input(self, utterance: str) -> Generator[Output, None, None]:
         if self.last_question is None:
             yield from self.output()
 
+        yield Output(lines=["Loading NLU libraries..."],
+                     output_type=OutputType.progress)
+        from nlu.nlu import extract_info
         extracted = extract_info(utterance)
         utterance = utterance.lower()
         print('Utterance:', utterance)
@@ -134,17 +146,21 @@ class Pipeline:
                                      output_type=OutputType.progress)
                         airports = find_matches(utterance)
                         status = yield from self.manager.inform(which, airports)
-                    # else:
-                    #     try:
-                    #         status = yield from self.manager.inform(self.last_question.name, [(utterance, 1)])
-                    #     except ex:
-                    #         print("ERROR while informing manager:", ex)
+                    else:
+                        try:
+                            matches = self.match_expected(utterance)
+                            status = yield from self.manager.inform(self.last_question, matches)
+                        except Exception as e:
+                            print("Could not match to expected values.", e)
+                            yield Output(lines=["Sorry, I didn't get that."],
+                                         output_type=OutputType.error)
 
         elif self.last_question is not None:
             if extracted["dialog_act"] in ["yes", "no"]:
                 print("YESNO")
                 print(extracted)
-                status = yield from self.manager.inform(self.last_question, [(str(extracted["dialog_act"] == "yes"), 1)])
+                status = yield from self.manager.inform(self.last_question,
+                                                        [(str(extracted["dialog_act"] == "yes"), 1)])
 
         if status is not None:
             yield from self.show_status(status)
@@ -162,6 +178,7 @@ class Pipeline:
         self.generate_question()
         if self.last_question is None and len(self.manager.possible_data) > 0:
             # no problem, we have some flights but just ran out of questions
+            json.dump({"data": self.manager.possible_data}, open("possible_data.json", "w"), indent=4)
             yield Output(
                 lines=verbalize(self.manager.possible_data, 5),
                 output_type=OutputType.finish)  # TODO finish is not quite right

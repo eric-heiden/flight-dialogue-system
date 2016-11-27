@@ -14,9 +14,10 @@ from dialogue.manager import DialogueTurn
 
 app = Flask(__name__)
 app.secret_key = uuid.uuid4()
-socketio = SocketIO(app, ping_timeout=30)
+socketio = SocketIO(app, ping_timeout=300)
 
 
+# stores dialogue pipeline and metadata per session
 class DialogueSession:
     def __init__(self, id: str):
         self.id = id
@@ -28,7 +29,7 @@ class DialogueSession:
         return {
             "started": str(self.started),
             "ended": str(self.ended),
-            "session_id" : self.id,
+            "session_id": self.id,
             "turns": list(map(lambda turn: {
                 "type": turn.type,
                 "data": str(turn.data),
@@ -76,9 +77,9 @@ def socket_message(message):
         eventlet.sleep(0)
 
 
-@socketio.on('my broadcast event')
-def socket_message(message):
-    emit('message', {'data': message['data']}, broadcast=True)
+# @socketio.on('my broadcast event')
+# def socket_message(message):
+#     emit('message', {'data': message['data']}, broadcast=True)
 
 
 @socketio.on('connect')
@@ -111,19 +112,20 @@ def save_log(session_data):
 
 @socketio.on('disconnect')
 def socket_disconnect():
-    sessions[request.sid].ended = str(datetime.now())
     print('User disconnected')
 
-    try:
-        session_data = sessions[request.sid].json()
-        del sessions[request.sid]
-        thr = threading.Thread(target=save_log, args=[session_data], kwargs={})
-        thr.start()
-        print("Saved log for session %s." % request.sid)
-        #  save_log(session_data)
-    except:
-        pass
+    if request.sid in sessions:
+        sessions[request.sid].ended = str(datetime.now())
+        try:
+            session_data = sessions[request.sid].json()
+            #  del sessions[request.sid]
+            thr = threading.Thread(target=save_log, args=[session_data], kwargs={})
+            thr.start()
+            print("Saved log for session %s." % request.sid)
+            #  save_log(session_data)
+        except:
+            pass
 
 
 if __name__ == '__main__':
-    socketio.run(app, host='0.0.0.0', port=5000)
+    socketio.run(app, debug=True, host='0.0.0.0', port=5000)

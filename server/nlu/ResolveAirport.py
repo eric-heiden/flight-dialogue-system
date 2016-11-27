@@ -62,7 +62,7 @@ def find_matches(query: str) -> [(str, float)]:
                 if word in value:
                     row_score += len(word) / len(query.split()) * column_score
             if query == value:
-                print(Fore.LIGHTBLACK_EX + "Exact match for airport %s %s of %s." % (key, row[key], row["Name"]) + Fore.WHITE)
+                print(Fore.LIGHTBLACK_EX + "Exact match for airport %s %s of %s." % (key, row[key], row["Name"]) + Fore.BLACK)
                 row_score += 50 if key == "Code" else 20
             applicable_values += 1.
         if applicable_values > 0:
@@ -79,7 +79,7 @@ def main(argv):
         query = input("What fact do you know about the airport? ")
         matches = find_matches(query)
         if len(matches) == 0:
-            print(Fore.RED + "Found no matches." + Fore.WHITE)
+            print(Fore.RED + "Found no matches." + Fore.BLACK)
         else:
             print("Found %i matches." % len(matches))
             print("Top %i matches are:\n\t%s" % (min(10, len(matches)), "\n\t".join(
@@ -88,7 +88,7 @@ def main(argv):
             # print most likely airport if the score is much better than the second best
             if matches[0][0] - matches[1][0] > 0.2:
                 print(Fore.GREEN + "You probably mean %s (%s)." % (
-                    matches[0][1]["Name"], matches[0][1]["Code"]) + Fore.WHITE)
+                    matches[0][1]["Name"], matches[0][1]["Code"]) + Fore.BLACK)
 
                 # while not resolved:
 
