@@ -66,14 +66,14 @@ class Speaker:
                     output.append(", {} from {}".format(e[i][1], e[i][0]))
                 output.append(", and {} from {}".format(e[-1][1], e[-1][0]))
             output.append(".")
-        elif field.name == "DepartureDate":
+        elif field.name == "Departure Date":
             output.append(" {} flights depart on {}".format(e[0][1], e[0][0]))
             if len(e) > 1:
                 for i in range(1, len(e) - 1):
                     output.append(", {} on {}".format(e[i][1], e[i][0]))
                 output.append(", and {} on {}".format(e[-1][1], e[-1][0]))
             output.append(".")
-        elif field.name == "ArrivalDate":
+        elif field.name == "Arrival Date":
             output.append(" {} flights arrive on {}".format(e[0][1], e[0][0]))
             if len(e) > 1:
                 for i in range(1, len(e) - 1):
