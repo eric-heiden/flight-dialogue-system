@@ -74,10 +74,16 @@ ADDITIONAL_ITINERARY_INTRODUCTION = [
     "You could also fly",
     "I've found yet another flight, this time",
 ]
-ITINERARY = [
+ITINERARY_RT = [
     "on <A> at <B> which gets in at <C>. The return flight is at <D> and departs at <E>. The airfare for this itinerary is <F>.",
     "with <A>, departing at <B> and arriving at your destination at <C>. You'd leave from there at <D> and get in at <E>. This would set you back <F>.",
     "on <A>. It leaves at <B> and gets in at <C>, with the return flight leaving at <D> and arriving back at <E>. The cost for this would be <F>.",
+]
+ITINERARY = [
+    "on <A> at <B> which gets in at <C> costing <F>.",
+    "with <A>, departing at <B> and arriving at your destination at <C>. This would set you back <F>.",
+    "on <A>. It leaves at <B> and gets in at <C>. The airfare for this one is <F>.",
+    "taking <A> at <B>, arriving at <C>, for <F>.",
 ]
 
 
@@ -264,10 +270,10 @@ def tell_all(results):
         outbound_departure = outbound_departure.strftime('%H:%M on %A, %B %d')
         outbound_arrival = get_datetime(flight, 'outbound_arrival_time')
         outbound_arrival = outbound_arrival.strftime('%H:%M on %A, %B %d')
-        inbound_departure = get_datetime(flight, 'inbound_departure_time')
-        inbound_departure = inbound_departure.strftime('%H:%M on %A, %B %d')
-        inbound_arrival = get_datetime(flight, 'inbound_arrival_time')
-        inbound_arrival = inbound_arrival.strftime('%H:%M on %A, %B %d')
+#         inbound_departure = get_datetime(flight, 'inbound_departure_time')
+#         inbound_departure = inbound_departure.strftime('%H:%M on %A, %B %d')
+#         inbound_arrival = get_datetime(flight, 'inbound_arrival_time')
+#         inbound_arrival = inbound_arrival.strftime('%H:%M on %A, %B %d')
         price = '${:0.2f}'.format(float(re.findall('([\d.]+)', flight['price'])[0]))
         if first:
             first = False
@@ -282,8 +288,8 @@ def tell_all(results):
         text = re.sub('<A>', airline, text)
         text = re.sub('<B>', outbound_departure, text)
         text = re.sub('<C>', outbound_arrival, text)
-        text = re.sub('<D>', inbound_departure, text)
-        text = re.sub('<E>', inbound_arrival, text)
+#         text = re.sub('<D>', inbound_departure, text)
+#         text = re.sub('<E>', inbound_arrival, text)
         text = re.sub('<F>', price, text)
         full_text.append(text)
     return full_text
