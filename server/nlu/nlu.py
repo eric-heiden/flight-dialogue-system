@@ -87,7 +87,7 @@ def determine_entity_o_d(token):
         if ancestor.tag_[0] == 'V':
             if o_d is not None and ancestor.lemma_ in RELATED_WORDS['invert_to_from']:
                 o_d = 'origin' if o_d == 'destination' else 'destination'
-            elif ancestor.lemma_ == 'depart':
+            elif ancestor.lemma_ == 'depart' or ancestor.lemma_ == 'leave':
                 o_d = 'origin'
             elif ancestor.lemma_ == 'arrive':
                 o_d = 'destination'
