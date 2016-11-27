@@ -86,14 +86,14 @@ class Speaker:
             if len(e) > 1:
                 for i in range(1, len(e) - 1):
                     output.append(", {} in {}".format(e[i][1], CABIN_TERMS[e[i][0]]))
-                output.append(", and {} in {}".format(e[-1][1], CABIN_TERMS[e[i][0]]))
+                output.append(", and {} in {}".format(e[-1][1], CABIN_TERMS[e[-1][0]]))
             output.append(".")
         elif field.name == "Carrier":
             if len(e) > 1:
                 output.append(" I found {} flights on {}".format(e[0][1], lookup_airline_name(e[0][0])))
                 for i in range(1, len(e) - 1):
                     output.append(", {} on {}".format(e[i][1], lookup_airline_name(e[i][0])))
-                output.append(", and {} on {}".format(e[-1][1], lookup_airline_name(e[i][0])))
+                output.append(", and {} on {}".format(e[-1][1], lookup_airline_name(e[-1][0])))
                 output.append(".")
             else:
                 output.append(" All available flights are on {}.".format(lookup_airline_name(e[0])))
