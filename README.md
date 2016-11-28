@@ -2,4 +2,4 @@
 
 A dialogue system to obtain information on flight schedules, ratings, reviews, airlines, airports, and so much more!
 
-![screenshot.png]
+![Screenshot](screenshot.png)
