@@ -58,7 +58,7 @@
             <time>{{entry.time}}</time>
         </div>
         <div class="msg" ng-if="entry.image">
-            <p>Here are some aspects from various reviews on <b>{{entry.airline}}</b></p>
+            <p>Here are some aspects from various reviews on <b>{{entry.airport}}{{entry.airline}}</b></p>
             <p class="wordclouds">
                 <span class="img neg-neg" ng-style="{'background-image':'url({{entry.image}})'}">
                     <span class="label">Negative aspects in negative reviews</span>

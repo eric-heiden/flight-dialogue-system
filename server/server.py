@@ -83,15 +83,18 @@ def socket_message(message):
                 'lines': [output]
             })
         else:
-            emit('message', {
-                'type': output.output_type.name,
-                'lines': output.lines,
-                'field': output.question
-            })
-            sessions[request.sid].system.manager.interaction_sequence.append(DialogueTurn("output", {
-                'type': output.output_type.name,
-                'lines': output.lines
-            }, datetime.now()))
+            message = {}
+            if len(output.output_type.name) > 0:
+                message['type'] = output.output_type.name
+            if len(output.lines) > 0:
+                message['lines'] = output.lines
+            if len(output.question) > 0:
+                message['field'] = output.question
+            for key, value in output.extra_data.items():
+                message[key] = value
+            print("Got message", message)
+            emit('message', message)
+            sessions[request.sid].system.manager.interaction_sequence.append(DialogueTurn("output", message, datetime.now()))
         emit('state', sessions[request.sid].system.user_state())
         eventlet.sleep(0)
 

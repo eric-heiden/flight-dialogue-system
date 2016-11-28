@@ -15,13 +15,13 @@ app.factory('socket', ['$rootScope', function ($rootScope) {
 
 app.controller('ChatCtrl', function ($scope, $timeout, socket) {
     $scope.chat = [];
-    $scope.chat.push({
-        image: "static/airline_wordclouds/aer-lingus.png",
-        type: "airline-review",
-        airline: "Aer Lingus",
-        partner: "other",
-        time: moment().format("HH:mm")
-    });
+    // $scope.chat.push({
+    //     image: "static/airline_wordclouds/aer-lingus.png",
+    //     type: "airline-review",
+    //     airline: "Aer Lingus",
+    //     partner: "other",
+    //     time: moment().format("HH:mm")
+    // });
     $scope.state = {};
     $scope.progress = undefined;
     $scope.statefeedback = false;

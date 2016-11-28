@@ -14,14 +14,19 @@ from nlg.nlg import Speaker
 from nlg.results_verbalizer import verbalize
 from qpx_database import QPXDatabase
 
-OutputType = Enum('OutputType', 'greeting progress error feedback question finish')
+OutputType = Enum('OutputType', 'greeting progress error feedback question finish review')
 
 
 class Output:
-    def __init__(self, lines: [str] = [], output_type: Enum = OutputType.greeting, question: str = ""):
+    def __init__(self,
+                 lines: [str] = [],
+                 output_type: Enum = OutputType.greeting,
+                 question: str = "",
+                 extra_data: {str: str} = {}):
         self.lines = lines
         self.output_type = output_type
         self.question = question
+        self.extra_data = extra_data
 
 
 class Pipeline:
@@ -69,7 +74,8 @@ class Pipeline:
 
     def show_status(self, status: Tuple[bool, Union[str, int]]) -> Generator[Output, None, None]:
         if status[1] is not None and status[1] == 1:
-            yield Output(lines=["I found the perfect flight for you!"],
+            yield Output(lines=["I found the perfect flight for you!"]
+                         + verbalize(self.manager.possible_data, 2),
                          output_type=OutputType.finish)
         else:
             feedback = self.speaker.inform(status)
@@ -122,6 +128,51 @@ class Pipeline:
             return True
         return False
 
+    # show review data for airports / airlines, if available
+    def interpret_question(self, question: {str: str}) -> Generator[Output, None, bool]:
+        from nlu.airport import find_airport_by_code, find_airport_wordcloud
+        from nlu.airline import find_airline_by_code, find_airline_wordcloud
+
+        print("Interpreting question", question)
+        for key, value in question.items():
+            if key == 'u_location' or key == 'u_entity':
+                for v in value:
+                    for code, _ in find_matches(v):
+                        airport = find_airport_by_code(code)
+                        if airport is None:
+                            print("Could not extract airport from", code)
+                            continue
+                        wordcloud = find_airport_wordcloud(airport)
+                        if wordcloud is None:
+                            print("Could not find wordcloud for airport", airport["Name"])
+                            continue
+                        print("Found airport", airport, wordcloud)
+                        yield Output(lines=[], output_type=OutputType.review, question="", extra_data={
+                            "type": "airport-review",
+                            "airport": "%s (%s)" % (airport["Name"], airport["Code"]),
+                            "image": wordcloud
+                        })
+                        return True
+            elif key == "airlines":
+                for v in value:
+                    airline = find_airline_by_code(v)
+                    if airline is None:
+                        print("Could not extract airline from", v)
+                        continue
+                    wordcloud = find_airline_wordcloud(airline)
+                    if wordcloud is None:
+                        print("Could not find wordcloud for airline", airline["Name"])
+                        continue
+                    print("Found airline", airline, wordcloud)
+                    yield Output(lines=[], output_type=OutputType.review, question="", extra_data={
+                        "type": "airline-review",
+                        "airline": airline['Name'],
+                        "image": wordcloud
+                    })
+                    return True
+
+        return False
+
     # matches utterance to expected values using fuzzy string matching
     def match_expected(self, utterance: str) -> [Tuple[str, float]]:
         from difflib import SequenceMatcher
@@ -172,6 +223,15 @@ class Pipeline:
                             print("Could not match to expected values.", e)
                             yield Output(lines=["Sorry, I didn't get that."],
                                          output_type=OutputType.error)
+
+        elif extracted["dialog_act"] == "question":
+            del extracted["dialog_act"]
+            question_interpreted = yield from self.interpret_question(extracted)
+            if not question_interpreted:
+                yield Output(lines=["Sorry, I didn't understand your question."],
+                             output_type=OutputType.error)
+            yield from self.output()
+            return
 
         elif self.last_question is not None:
             if extracted["dialog_act"] in ["yes", "no"]:
