@@ -157,11 +157,13 @@ class Speaker:
         success, data = feedback
         if success:
             json.dump({"data": self.manager.possible_data}, open("possible_data.json", "w"), indent=4)
-            if data is None or data <= 0:
+            if data is None or data < 0:
                 return [random.choice(thanks).capitalize() + "! " + random.choice([
                     "Now, before I can show you some flights I need more information.",
                     "Let me gather some more information until I can show you some flights."
                 ])]
+            elif data == 0:
+                return [random.choice(error) + " I could not find any flights matching your preferences."]
             return verbalize(self.manager.possible_data, 4)
         else:
             return [random.choice(error) + " I got a problem from my manager. He said \"%s\"." % data]

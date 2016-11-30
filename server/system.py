@@ -75,11 +75,12 @@ class Pipeline:
     def show_status(self, status: Tuple[bool, Union[str, int]]) -> Generator[Output, None, None]:
         if status[1] is not None and status[1] == 1:
             yield Output(lines=["I found the perfect flight for you!"]
-                         + verbalize(self.manager.possible_data, 2),
-                         output_type=OutputType.finish)
+                               + verbalize(self.manager.possible_data, 2),
+                         output_type=OutputType.finish,
+                         extra_data={"status": status})
         else:
             feedback = self.speaker.inform(status)
-            yield Output(lines=feedback, output_type=OutputType.feedback)
+            yield Output(lines=feedback, output_type=OutputType.feedback, extra_data={"status": status})
 
     def interpret_statement(self, statement: {str: str}) -> Generator[Output, None, bool]:
         status = None
@@ -242,6 +243,9 @@ class Pipeline:
 
         if status is not None:
             yield from self.show_status(status)
+            if status[1] == 0 and status[0]:
+                print("Found no flights.")
+                return
 
         # if self.last_question.name == 'Origin' or self.last_question.name == 'Destination':
         #     yield Output(lines=["Resolving %s airport code..." % self.last_question.name], output_type=OutputType.progress)
@@ -254,13 +258,14 @@ class Pipeline:
             self.show_status(status)
             return
 
+        print("Asking question despite status =", json.dumps(status))
         self.generate_question()
         if self.last_question is None and len(self.manager.possible_data) > 0:
             # no problem, we have some flights but just ran out of questions
             json.dump({"data": self.manager.possible_data}, open("possible_data.json", "w"), indent=4)
-            yield Output(
-                lines=verbalize(self.manager.possible_data, 5),
-                output_type=OutputType.finish)  # TODO finish is not quite right
+            # yield Output(
+            #     lines=verbalize(self.manager.possible_data, 5),
+            #     output_type=OutputType.finish)  # TODO finish is not quite right
         else:
             yield Output(
                 lines=[self.speaker.ask(self.last_question, self.expected_answer)],
