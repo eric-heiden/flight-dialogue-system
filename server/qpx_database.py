@@ -1,7 +1,7 @@
 from typing import Union
 
-from server.qpx import qpx
-from server.dialogue.database import Database
+from qpx import qpx
+from dialogue.database import Database
 
 
 class QPXDatabase(Database):

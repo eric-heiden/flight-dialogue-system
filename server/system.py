@@ -5,13 +5,13 @@ from typing import Union, Generator, Tuple
 
 import sys, re
 
-from server.nlu.ResolveAirport import find_matches
+from nlu.ResolveAirport import find_matches
 # from nlu.nlu import extract_info
-from server.dialogue.manager import Manager, DialogueTurn
-from server.dialogue.field import Field, NumField, NumCategory
-from server.nlg.nlg import Speaker
-from server.nlg.results_verbalizer import verbalize
-from server.qpx_database import QPXDatabase
+from dialogue.manager import Manager, DialogueTurn
+from dialogue.field import Field, NumField, NumCategory
+from nlg.nlg import Speaker
+from nlg.results_verbalizer import verbalize
+from qpx_database import QPXDatabase
 
 OutputType = Enum('OutputType', 'greeting progress error feedback question finish review')
 

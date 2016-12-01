@@ -1,12 +1,8 @@
 #!/usr/bin/env python
 # -*- coding: utf-8 -*-
-#if __name__ == '__main__':
+
 from system import Pipeline
 from dialogue.manager import DialogueTurn
-# else:
-#     __package__ = "server"
-#     from .system import Pipeline
-#     from .dialogue.manager import DialogueTurn
 
 import json
 import os

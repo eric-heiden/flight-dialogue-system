@@ -6,13 +6,8 @@ import matplotlib.pyplot as plt
 from matplotlib import cm
 from matplotlib import gridspec
 
-import server
-import server.test
-
-__package__ = "server.test"
-
-from ..nlu.airport import available_airports
-from ..nlu.ResolveAirport import find_matches
+from server.nlu.airport import available_airports
+from server.nlu.ResolveAirport import find_matches
 import random
 
 

@@ -6,14 +6,9 @@ import matplotlib.pyplot as plt
 from matplotlib import cm
 from matplotlib import gridspec
 
-import server
-import server.test
-
-__package__ = "server.test"
-
-from server.system import Pipeline
-from server.dialogue.manager import Manager
-from server.nlu.ResolveAirport import find_matches
+from system import Pipeline
+from dialogue.manager import Manager
+from nlu.ResolveAirport import find_matches
 
 CITIES = [
     "Los Angeles",
@@ -136,17 +131,17 @@ def plot():
     plt.show()
 
 
-if __name__ == '__main__':
-    experiment = {
-        "dialogues": []
-    }
-    for i in range(33):
-        print("Dialogue", i)
-        pipeline = Pipeline()
-        turns = list(filter(lambda x: "question" in x, test_dialogue(pipeline.manager, FROM_TO[i][0], FROM_TO[i][1])))
-        print(turns)
-        experiment["dialogues"].append(turns)
-
-    json.dump(experiment, codecs.open("test_dialog_questions.json", "w", encoding="utf-8"), indent=4)
+def main():
+    # experiment = {
+    #     "dialogues": []
+    # }
+    # for i in range(33):
+    #     print("Dialogue", i)
+    #     pipeline = Pipeline()
+    #     turns = list(filter(lambda x: "question" in x, test_dialogue(pipeline.manager, FROM_TO[i][0], FROM_TO[i][1])))
+    #     print(turns)
+    #     experiment["dialogues"].append(turns)
+    #
+    # json.dump(experiment, codecs.open("test_dialog_questions.json", "w", encoding="utf-8"), indent=4)
 
     plot()
