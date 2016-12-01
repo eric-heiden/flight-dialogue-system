@@ -4,8 +4,8 @@ from datetime import datetime
 
 import sys
 
-from dialogue.database import Database
-from dialogue.field import Field
+from .database import Database
+from .field import Field
 
 MAX_DATA = 2500
 

@@ -1,5 +1,13 @@
 #!/usr/bin/env python
 # -*- coding: utf-8 -*-
+#if __name__ == '__main__':
+from system import Pipeline
+from dialogue.manager import DialogueTurn
+# else:
+#     __package__ = "server"
+#     from .system import Pipeline
+#     from .dialogue.manager import DialogueTurn
+
 import json
 import os
 import uuid
@@ -9,8 +17,8 @@ from datetime import datetime
 import eventlet
 from flask import Flask, send_from_directory, session, request
 from flask_socketio import SocketIO, emit
-from system import Pipeline
-from dialogue.manager import DialogueTurn
+
+
 
 app = Flask(__name__)
 app.secret_key = uuid.uuid4()
@@ -60,13 +68,15 @@ def state_update_feedback(feedback):
     stateUpdateAccuracy["positive" if feedback["positive"] else "negative"] += 1
     emit('stateUpdateAccuracy', {
         'accuracy': "%.2f%%" %
-                    (stateUpdateAccuracy["positive"]*100./(stateUpdateAccuracy["positive"]+stateUpdateAccuracy["negative"]))
+                    (stateUpdateAccuracy["positive"] * 100. / (
+                    stateUpdateAccuracy["positive"] + stateUpdateAccuracy["negative"]))
     }, broadcast=True)
     json.dump(stateUpdateAccuracy, open("stateUpdateAccuracy.json", "w"), indent=4)
 
     if request.sid not in sessions:
         sessions[request.sid] = DialogueSession(request.sid)
-    sessions[request.sid].system.manager.interaction_sequence.append(DialogueTurn("stateUpdateAccuracyFeedback = positive", feedback["positive"], datetime.now()))
+    sessions[request.sid].system.manager.interaction_sequence.append(
+        DialogueTurn("stateUpdateAccuracyFeedback = positive", feedback["positive"], datetime.now()))
 
 
 @socketio.on('message')
@@ -94,7 +104,8 @@ def socket_message(message):
                 message[key] = value
             print("Got message", message)
             emit('message', message)
-            sessions[request.sid].system.manager.interaction_sequence.append(DialogueTurn("output", message, datetime.now()))
+            sessions[request.sid].system.manager.interaction_sequence.append(
+                DialogueTurn("output", message, datetime.now()))
         emit('state', sessions[request.sid].system.user_state())
         eventlet.sleep(0)
 

@@ -1,13 +1,12 @@
-import sys, json, requests, subprocess, time, numbers
+import sys, json, numbers, os
 from difflib import SequenceMatcher
-from fuzzywuzzy import fuzz
 from colorama import Fore
 
 FUZZ_RATIO = 1.
 
 resolved = False
 
-available_options = json.load(open("nlu/airports2.json", "r", encoding="utf8"))
+available_options = json.load(open(os.path.dirname(__file__) + "/airports2.json", "r", encoding="utf8"))
 
 column_scores = {
     "Name": 1.0,

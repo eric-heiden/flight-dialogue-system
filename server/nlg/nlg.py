@@ -1,13 +1,11 @@
-import json
+import json, random
 from collections import defaultdict
 from typing import Union
 
-from dialogue.field import Field
-import random
-
-from dialogue.manager import Manager
-from nlg.results_verbalizer import verbalize
-from nlg.results_verbalizer import lookup_airline_name
+from server.dialogue.field import Field
+from server.dialogue.manager import Manager
+from server.nlg.results_verbalizer import verbalize
+from server.nlg.results_verbalizer import lookup_airline_name
 
 generic_what_questions = [
     "Can you please tell me your desired %s?",

@@ -3,7 +3,7 @@ from typing import Union
 
 import sys
 
-available_airports = json.load(open("nlu/airports2.json", "r", encoding="utf8"))
+available_airports = json.load(open(os.path.dirname(__file__) + "/airports2.json", "r", encoding="utf8"))
 
 
 def find_airport_by_code(code: str) -> Union[None, object]:

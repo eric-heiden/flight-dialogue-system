@@ -1,12 +1,10 @@
 import sys, requests, uuid, json, os
 from colorama import Fore
 
-FOLDER_PREFIX = "qpx/"
-
 
 def get_flights(request):
     try:
-        key = "".join(open(FOLDER_PREFIX + "api.key", "r").readlines()).strip()
+        key = "".join(open(os.path.dirname(__file__) + "/api.key", "r").readlines()).strip()
     except:
         key = None
     if key is None:
@@ -17,9 +15,9 @@ def get_flights(request):
 
     # search cache for query
     request_dump = json.dumps(request["request"], sort_keys=True)
-    for base, _, files in os.walk(FOLDER_PREFIX + 'cache/'):
+    for base, _, files in os.walk(os.path.dirname(__file__) + "/cache/"):
         for file in files:
-            cached = json.load(open(os.path.join(FOLDER_PREFIX + "cache", file), "r"))
+            cached = json.load(open(os.path.dirname(__file__) + "/cache/" + file, "r"))
             # print(request_dump)
             # print(json.dumps(cached["request"], sort_keys=True))
             if "request" in cached and json.dumps(cached["request"], sort_keys=True) == request_dump:
@@ -30,11 +28,14 @@ def get_flights(request):
         'https://www.googleapis.com/qpxExpress/v1/trips/search?fields=kind%2Ctrips&key=' + key,
         json=request)
     if r.status_code != 200:
-        print(Fore.RED, r, Fore.WHITE)
+        print(Fore.RED, r, r.reason,
+              "\nQPX Query failed for request",
+              json.dumps(request, indent=4),
+              Fore.WHITE)
     else:
         cache = request
         cache["response"] = r.json()
-        json.dump(cache, open(FOLDER_PREFIX + "cache/%s.json" % str(uuid.uuid4()), "w"), indent=4)
+        json.dump(cache, open(os.path.dirname(__file__) + "/cache/%s.json" % str(uuid.uuid4()), "w"), indent=4)
         return r.json()
     return None
 
